@@ -2113,5 +2113,159 @@
     "webPreview": "Web preview",
     "openSourcePage": "Open source page",
     "noWebSnapshot": "No web snapshot yet — check the stored text or open the source page."
+  },
+  "monitor": {
+    "title": "System Monitoring",
+    "headerTitle": "AI Compute Monitoring Center",
+    "headerSub": "AI COMPUTE OBSERVABILITY · INTERACTIVE PROTOTYPE",
+    "clusterName": "ZC-01 · Training/Inference Mixed Cluster",
+    "singleCluster": "Single-cluster mode",
+    "centerHint": "Unified heterogeneous accelerator management · Ascend / Hygon DCU / Muxi / Iluvatar",
+    "live": "Live",
+    "realtime": "Live",
+    "sample": "Sampled {{time}}",
+    "kpi": {
+      "util": "Compute Utilization",
+      "vmem": "VRAM Usage",
+      "cpu": "CPU Utilization",
+      "mem": "Memory Usage",
+      "net": "Network Throughput",
+      "power": "Cluster Power",
+      "temp": "Avg Temperature"
+    },
+    "overviewTitle": "Resource Overview",
+    "overviewSub": "RESOURCE OVERVIEW",
+    "overview": {
+      "node": "Managed Nodes",
+      "card": "Managed Accelerators",
+      "flops": "Total Compute (FP16)",
+      "mem": "Total VRAM",
+      "run": "Running Jobs",
+      "queue": "Queued Jobs"
+    },
+    "units": {
+      "node": "",
+      "card": "",
+      "pflops": "PFLOPS",
+      "tb": "TB",
+      "percent": "%",
+      "gbps": "Gb/s",
+      "kw": "kW",
+      "celsius": "°C",
+      "cardUnit": "cards"
+    },
+    "vendorMixTitle": "Heterogeneous Compute Pool",
+    "vendorMixSub": "VENDOR MIX",
+    "totalCards": "Managed Accelerators",
+    "vendors": {
+      "hygon": "Hygon DCU",
+      "ascend": "Ascend",
+      "muxi": "Muxi",
+      "iluvatar": "Iluvatar"
+    },
+    "vendorShort": {
+      "hygon": "Hygon",
+      "ascend": "Ascend",
+      "muxi": "Muxi",
+      "iluvatar": "Iluvatar"
+    },
+    "vendorModels": {
+      "hygon": "K100AI",
+      "ascend": "910B4",
+      "muxi": "XiYun C500",
+      "iluvatar": "BI-V150"
+    },
+    "modelTitle": "Vendor Model Inventory",
+    "modelSub": "MODEL INVENTORY",
+    "topologyTitle": "Cluster Accelerator Topology · ZC-01",
+    "topologySub": "Click a node to drill down",
+    "topologyHint": "Block = single accelerator utilization",
+    "roles": {
+      "train": "Training",
+      "inference": "Inference"
+    },
+    "nodes": {
+      "n01": "Compute Node-01",
+      "n02": "Compute Node-02",
+      "n03": "Compute Node-03",
+      "n04": "Compute Node-04",
+      "n05": "Compute Node-05",
+      "n06": "Compute Node-06"
+    },
+    "nodeMemory": "{{count}}×64GB",
+    "trendTitle": "Cluster Utilization Trend",
+    "trendSub": "LIVE TREND",
+    "trendLegend": {
+      "util": "Compute Utilization",
+      "vmem": "VRAM Usage"
+    },
+    "trendRange": "Last 3 min · 2s/sample",
+    "alertsTitle": "Live Alerts",
+    "alertsSub": "ALERTS",
+    "severity": {
+      "all": "All",
+      "crit": "Critical",
+      "warn": "Warning",
+      "info": "Info"
+    },
+    "alerts": {
+      "a1": "Node 10.20.1.21 average temperature is high, approaching 70°C",
+      "a2": "Cluster ZC-01 scheduling policy switched to Fair Share",
+      "a3": "New node 10.20.1.41 (Iluvatar BI-V150) registered successfully"
+    },
+    "alertsEmpty": "No alerts, cluster is healthy ✓",
+    "alertsEmptyFilter": "No alerts at this level",
+    "tasksTitle": "Scheduled Tasks",
+    "tasksSub": "SCHEDULER",
+    "fairShare": "Fair Share",
+    "taskState": {
+      "running": "Running",
+      "migrating": "Migrating",
+      "queued": "Queued"
+    },
+    "tasks": {
+      "t1": "LLaMA-3.1-70B distributed pre-training",
+      "t2": "Code LLM SFT fine-tuning",
+      "t3": "DeepSeek-R1 multimodal alignment",
+      "t4": "Ascend · code model full fine-tuning",
+      "t5": "Ascend · vector retrieval inference service",
+      "t6": "Ascend · RAG QA inference",
+      "t7": "Muxi · text-to-image inference",
+      "t8": "Iluvatar · video understanding inference",
+      "t9": "Scientific computing CFD batch job",
+      "t10": "Ascend · offline batch translation"
+    },
+    "pendingAssign": "Unassigned",
+    "taskMeta": "{{id}} · {{ip}} · {{cards}} cards",
+    "logsTitle": "Live Log",
+    "logsSub": "LIVE LOG",
+    "tableTitle": "Accelerator Node Resources",
+    "tableSub": "HOST INVENTORY",
+    "tableHint": "Click a row for details · each row can trigger a failover drill",
+    "filterAll": "All",
+    "columns": {
+      "device": "Device (IP / Hostname)",
+      "vendor": "Vendor / Model",
+      "cards": "Accelerators",
+      "util": "Compute Utilization",
+      "vmem": "VRAM Usage",
+      "mem": "Memory Usage",
+      "net": "Network",
+      "temp": "Temperature",
+      "power": "Power",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "on": "Healthy",
+      "migrating": "Migrating",
+      "down": "Down"
+    },
+    "actions": {
+      "detail": "Details",
+      "drill": "Failover drill",
+      "recover": "Recover"
+    },
+    "currentCluster": "Current Cluster"
   }
 }

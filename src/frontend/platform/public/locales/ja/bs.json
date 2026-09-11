@@ -2058,5 +2058,159 @@
     "webPreview": "ウェブプレビュー",
     "openSourcePage": "元のページを開く",
     "noWebSnapshot": "ウェブスナップショットがありません。登録テキストを確認するか、元のページを開いてください。"
+  },
+  "monitor": {
+    "title": "システム監視",
+    "headerTitle": "AIコンピュート監視センター",
+    "headerSub": "AI COMPUTE OBSERVABILITY · INTERACTIVE PROTOTYPE",
+    "clusterName": "ZC-01 · 学習/推論混在クラスタ",
+    "singleCluster": "単一クラスタモード",
+    "centerHint": "異種チップ統合管理 · Ascend / Hygon DCU / Muxi / Iluvatar",
+    "live": "リアルタイム",
+    "realtime": "リアルタイム",
+    "sample": "サンプリング {{time}}",
+    "kpi": {
+      "util": "演算利用率",
+      "vmem": "ビデオメモリ使用率",
+      "cpu": "CPU使用率",
+      "mem": "メモリ使用率",
+      "net": "ネットワークスループット",
+      "power": "クラスタ電力",
+      "temp": "平均温度"
+    },
+    "overviewTitle": "リソース概要",
+    "overviewSub": "RESOURCE OVERVIEW",
+    "overview": {
+      "node": "管理ノード",
+      "card": "管理アクセラレータ",
+      "flops": "総演算能力（FP16）",
+      "mem": "総ビデオメモリ",
+      "run": "実行中ジョブ",
+      "queue": "待機中ジョブ"
+    },
+    "units": {
+      "node": "台",
+      "card": "枚",
+      "pflops": "PFLOPS",
+      "tb": "TB",
+      "percent": "%",
+      "gbps": "Gb/s",
+      "kw": "kW",
+      "celsius": "℃",
+      "cardUnit": "枚"
+    },
+    "vendorMixTitle": "異種コンピュートプール",
+    "vendorMixSub": "VENDOR MIX",
+    "totalCards": "管理アクセラレータ",
+    "vendors": {
+      "hygon": "Hygon DCU",
+      "ascend": "Ascend",
+      "muxi": "Muxi",
+      "iluvatar": "Iluvatar"
+    },
+    "vendorShort": {
+      "hygon": "Hygon",
+      "ascend": "Ascend",
+      "muxi": "Muxi",
+      "iluvatar": "Iluvatar"
+    },
+    "vendorModels": {
+      "hygon": "K100AI",
+      "ascend": "910B4",
+      "muxi": "曦雲 C500",
+      "iluvatar": "BI-V150"
+    },
+    "modelTitle": "ベンダー別モデル一覧",
+    "modelSub": "MODEL INVENTORY",
+    "topologyTitle": "クラスタ加速カードトポロジー · ZC-01",
+    "topologySub": "ノードをクリックして詳細表示",
+    "topologyHint": "色 = 単一加速カードの利用率",
+    "roles": {
+      "train": "学習",
+      "inference": "推論"
+    },
+    "nodes": {
+      "n01": "コンピュートノード-01",
+      "n02": "コンピュートノード-02",
+      "n03": "コンピュートノード-03",
+      "n04": "コンピュートノード-04",
+      "n05": "コンピュートノード-05",
+      "n06": "コンピュートノード-06"
+    },
+    "nodeMemory": "{{count}}×64GB",
+    "trendTitle": "クラスタ利用率トレンド",
+    "trendSub": "LIVE TREND",
+    "trendLegend": {
+      "util": "演算利用率",
+      "vmem": "ビデオメモリ使用率"
+    },
+    "trendRange": "直近3分 · 2秒/サンプル",
+    "alertsTitle": "リアルタイムアラート",
+    "alertsSub": "ALERTS",
+    "severity": {
+      "all": "すべて",
+      "crit": "緊急",
+      "warn": "警告",
+      "info": "情報"
+    },
+    "alerts": {
+      "a1": "ノード 10.20.1.21 の平均温度が高く、閾値70℃に接近",
+      "a2": "クラスタ ZC-01 のスケジューリング方針を「公平共有」に切替",
+      "a3": "新ノード 10.20.1.41（Iluvatar BI-V150）の登録が完了"
+    },
+    "alertsEmpty": "アラートなし、クラスタは正常です ✓",
+    "alertsEmptyFilter": "このレベルのアラートはありません",
+    "tasksTitle": "スケジュールタスク",
+    "tasksSub": "SCHEDULER",
+    "fairShare": "公平共有",
+    "taskState": {
+      "running": "実行中",
+      "migrating": "移行中",
+      "queued": "待機中"
+    },
+    "tasks": {
+      "t1": "LLaMA-3.1-70B 分散事前学習",
+      "t2": "コードLLM SFTファインチューニング",
+      "t3": "DeepSeek-R1 マルチモーダルアライメント",
+      "t4": "Ascend · コードモデル全パラメータ微調整",
+      "t5": "Ascend · ベクトル検索推論サービス",
+      "t6": "Ascend · RAG QA推論",
+      "t7": "Muxi · テキスト画像生成推論",
+      "t8": "Iluvatar · 動画理解推論",
+      "t9": "科学計算 CFD バッチジョブ",
+      "t10": "Ascend · オフラインバッチ翻訳"
+    },
+    "pendingAssign": "未割当",
+    "taskMeta": "{{id}} · {{ip}} · {{cards}} 枚",
+    "logsTitle": "リアルタイムログ",
+    "logsSub": "LIVE LOG",
+    "tableTitle": "加速カードノードリソース",
+    "tableSub": "HOST INVENTORY",
+    "tableHint": "行をクリックして詳細表示 · 各行でフェイルオーバー訓練を実行可能",
+    "filterAll": "すべて",
+    "columns": {
+      "device": "デバイス（IP / ホスト名）",
+      "vendor": "ベンダー / モデル",
+      "cards": "加速カード",
+      "util": "演算利用率",
+      "vmem": "ビデオメモリ使用率",
+      "mem": "メモリ使用率",
+      "net": "ネットワーク",
+      "temp": "温度",
+      "power": "電力",
+      "status": "状態",
+      "actions": "操作"
+    },
+    "status": {
+      "on": "正常",
+      "migrating": "移行中",
+      "down": "異常"
+    },
+    "actions": {
+      "detail": "詳細",
+      "drill": "障害訓練",
+      "recover": "復旧"
+    },
+    "currentCluster": "現在のクラスタ"
   }
 }

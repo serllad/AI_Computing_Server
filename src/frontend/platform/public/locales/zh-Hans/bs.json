@@ -2058,5 +2058,159 @@
     "webPreview": "网页预览",
     "openSourcePage": "打开原网页",
     "noWebSnapshot": "暂无网页快照，请查看入库文本或打开原网页。"
+  },
+  "monitor": {
+    "title": "系统监控",
+    "headerTitle": "智算资源监控中心",
+    "headerSub": "AI COMPUTE OBSERVABILITY · INTERACTIVE PROTOTYPE",
+    "clusterName": "ZC-01 · 训练/推理混部集群",
+    "singleCluster": "单集群模式",
+    "centerHint": "异构芯片统一纳管 · 昇腾 / 海光DCU / 沐曦 / 天数智芯",
+    "live": "实时监控",
+    "realtime": "实时",
+    "sample": "采样 {{time}}",
+    "kpi": {
+      "util": "算力利用率",
+      "vmem": "显存使用率",
+      "cpu": "CPU 利用率",
+      "mem": "内存使用率",
+      "net": "网络吞吐",
+      "power": "集群功耗",
+      "temp": "平均温度"
+    },
+    "overviewTitle": "资源总览",
+    "overviewSub": "RESOURCE OVERVIEW",
+    "overview": {
+      "node": "纳管物理节点",
+      "card": "纳管加速卡",
+      "flops": "总算力（FP16）",
+      "mem": "总显存容量",
+      "run": "运行中任务",
+      "queue": "排队任务"
+    },
+    "units": {
+      "node": "台",
+      "card": "张",
+      "pflops": "PFLOPS",
+      "tb": "TB",
+      "percent": "%",
+      "gbps": "Gb/s",
+      "kw": "kW",
+      "celsius": "℃",
+      "cardUnit": "卡"
+    },
+    "vendorMixTitle": "异构算力资源池",
+    "vendorMixSub": "VENDOR MIX",
+    "totalCards": "纳管加速卡",
+    "vendors": {
+      "hygon": "海光 DCU",
+      "ascend": "昇腾",
+      "muxi": "沐曦",
+      "iluvatar": "天数智芯"
+    },
+    "vendorShort": {
+      "hygon": "海光",
+      "ascend": "昇腾",
+      "muxi": "沐曦",
+      "iluvatar": "天数"
+    },
+    "vendorModels": {
+      "hygon": "K100AI",
+      "ascend": "910B4",
+      "muxi": "曦云C500",
+      "iluvatar": "BI-V150"
+    },
+    "modelTitle": "厂商型号资源明细",
+    "modelSub": "MODEL INVENTORY",
+    "topologyTitle": "集群加速卡拓扑 · ZC-01",
+    "topologySub": "点击节点下钻",
+    "topologyHint": "色块 = 单张加速卡利用率",
+    "roles": {
+      "train": "训练",
+      "inference": "推理"
+    },
+    "nodes": {
+      "n01": "智算节点-01",
+      "n02": "智算节点-02",
+      "n03": "智算节点-03",
+      "n04": "智算节点-04",
+      "n05": "智算节点-05",
+      "n06": "智算节点-06"
+    },
+    "nodeMemory": "{{count}}×64GB",
+    "trendTitle": "集群资源利用率趋势",
+    "trendSub": "LIVE TREND",
+    "trendLegend": {
+      "util": "算力利用率",
+      "vmem": "显存使用率"
+    },
+    "trendRange": "最近 3 分钟 · 2s/采样",
+    "alertsTitle": "实时告警",
+    "alertsSub": "ALERTS",
+    "severity": {
+      "all": "全部",
+      "crit": "紧急",
+      "warn": "警告",
+      "info": "提示"
+    },
+    "alerts": {
+      "a1": "节点 10.20.1.21 平均温度偏高，接近阈值 70℃",
+      "a2": "集群 ZC-01 调度策略已切换为「公平共享」",
+      "a3": "新节点 10.20.1.41（天数智芯 BI-V150）注册纳管成功"
+    },
+    "alertsEmpty": "暂无告警，集群运行正常 ✓",
+    "alertsEmptyFilter": "该级别暂无告警",
+    "tasksTitle": "调度任务",
+    "tasksSub": "SCHEDULER",
+    "fairShare": "公平共享",
+    "taskState": {
+      "running": "运行中",
+      "migrating": "迁移中",
+      "queued": "排队中"
+    },
+    "tasks": {
+      "t1": "LLaMA-3.1-70B 分布式预训练",
+      "t2": "代码大模型 SFT 微调",
+      "t3": "DeepSeek-R1 多模态对齐",
+      "t4": "昇腾 · 代码模型全参微调",
+      "t5": "昇腾 · 向量检索推理服务",
+      "t6": "昇腾 · RAG 问答推理",
+      "t7": "沐曦 · 文生图推理",
+      "t8": "天数 · 视频理解推理",
+      "t9": "科学计算 CFD 批作业",
+      "t10": "昇腾 · 离线批量翻译"
+    },
+    "pendingAssign": "待分配",
+    "taskMeta": "{{id}} · {{ip}} · {{cards}} 卡",
+    "logsTitle": "实时日志",
+    "logsSub": "LIVE LOG",
+    "tableTitle": "加速卡节点资源",
+    "tableSub": "HOST INVENTORY",
+    "tableHint": "点击行查看详情 · 每行可触发 故障迁移演示",
+    "filterAll": "全部",
+    "columns": {
+      "device": "设备（IP / 主机名）",
+      "vendor": "厂商 / 型号",
+      "cards": "加速卡",
+      "util": "算力利用率",
+      "vmem": "显存使用率",
+      "mem": "内存使用率",
+      "net": "网络带宽",
+      "temp": "温度",
+      "power": "功耗",
+      "status": "状态",
+      "actions": "操作"
+    },
+    "status": {
+      "on": "正常",
+      "migrating": "迁移中",
+      "down": "异常"
+    },
+    "actions": {
+      "detail": "详情",
+      "drill": "故障演练",
+      "recover": "一键恢复"
+    },
+    "currentCluster": "当前集群"
   }
 }
