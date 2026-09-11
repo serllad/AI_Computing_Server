@@ -1,0 +1,7 @@
+node_modules
+**/node_modules
+platform/build
+client/build
+packages/*/dist
+**/.git
+**/*.log
