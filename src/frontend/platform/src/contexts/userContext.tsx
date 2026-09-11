@@ -149,6 +149,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 'board',
                 'model',
                 'log',
+                'ops',
                 'knowledge',
                 'build',
                 'evaluation',
@@ -210,6 +211,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                     '/evaluation': 'evaluation',
                     '/label': 'mark_task',
                     '/log': 'log',
+                    '/ops': 'ops',
                 }
                 const normalizedPath = pathName.replace(/\/+$/, '') || '/'
                 let menuName = MENU_KEY_MAP[normalizedPath]

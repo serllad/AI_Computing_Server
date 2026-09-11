@@ -14,7 +14,6 @@ import { RolesAndPermissions } from "./components/RolesAndPermissions"
 import Theme from "./theme"
 import UserGroups from "./components/UserGroup"
 import Users from "./components/Users"
-import { SystemMonitor } from "./components/systemMonitor/SystemMonitor"
 
 export default function index() {
   const { user } = useContext(userContext)
@@ -34,8 +33,6 @@ export default function index() {
   const canAccessSystemConfig = isSuperAdmin
   /** 组织同步仅超级管理员可见（网关掉对接口推送后，本页只读看记录与日志） */
   const showOrgSyncTab = isSuperAdmin
-  /** System monitoring prototype is visible to global super admins only. Static prototype for now; logic will be wired later. */
-  const canAccessSystemMonitor = isSuperAdmin
   /** PRD §4.5: Child Admin manages own tenant's user groups. Backend now
    *  flips can_manage_user_groups true for Child Admin too; the explicit
    *  is_child_admin term keeps the tab visible if the backend regresses. */
@@ -81,9 +78,6 @@ export default function index() {
           {canAccessSystemConfig && (
             <TabsTrigger value="theme">{t("system.appearanceSettings")}</TabsTrigger>
           )}
-          {canAccessSystemMonitor && (
-            <TabsTrigger value="monitor">{t("monitor.title")}</TabsTrigger>
-          )}
         </TabsList>
         {showOrgTab && (
           <TabsContent value="organization" className="min-h-0 flex-1 overflow-hidden">
@@ -118,11 +112,6 @@ export default function index() {
         {canAccessSystemConfig && (
           <TabsContent value="theme" className="min-h-0 flex-1 overflow-hidden">
             <Theme />
-          </TabsContent>
-        )}
-        {canAccessSystemMonitor && (
-          <TabsContent value="monitor" className="min-h-0 flex-1 overflow-hidden">
-            <SystemMonitor />
           </TabsContent>
         )}
       </Tabs>

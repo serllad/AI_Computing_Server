@@ -169,6 +169,7 @@ describe("MainLayout identity-specific navigation", () => {
       "menu.evaluation",
       "menu.annotation",
       "menu.log",
+      "menu.ops",
       "menu.approval",
       "menu.system",
     ]) {

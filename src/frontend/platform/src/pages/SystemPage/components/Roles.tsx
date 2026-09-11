@@ -116,6 +116,7 @@ export default function Roles() {
       { id: "board", label: t("menu.board") },
       { id: "model", label: t("menu.models") },
       { id: "log", label: t("menu.log") },
+      { id: "ops", label: t("menu.ops") },
       { id: "knowledge", label: t("menu.knowledge") },
       { id: "create_knowledge", label: t("menu.createKnowledge"), parentMenuId: "knowledge" as const },
       { id: "build", label: t("menu.skills") },

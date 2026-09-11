@@ -207,7 +207,8 @@
     "forBestExperience": "为了您的良好体验，请在 PC 端访问该网站",
     "onlineDocumentation": "在线文档",
     "changePwd": "修改密码",
-    "noAdminConsoleAccess": "当前用户没有访问管理后台的权限"
+    "noAdminConsoleAccess": "当前用户没有访问管理后台的权限",
+    "ops": "运维监控"
   },
   "system": {
     "userManagement": "用户管理",

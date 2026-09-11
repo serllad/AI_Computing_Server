@@ -207,7 +207,8 @@
     "forBestExperience": "For the best experience, please access this website on a PC",
     "onlineDocumentation": "Online Documentation",
     "changePwd": "Password",
-    "noAdminConsoleAccess": "You do not have access to the admin console."
+    "noAdminConsoleAccess": "You do not have access to the admin console.",
+    "ops": "Ops Monitoring"
   },
   "system": {
     "userManagement": "User Management",

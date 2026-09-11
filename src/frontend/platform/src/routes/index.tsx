@@ -38,6 +38,7 @@ const Finetune = lazy(() => import("@/pages/ModelPage/finetune").then(module => 
 const Management = lazy(() => import("@/pages/ModelPage/manage"));
 const Report = lazy(() => import("@/pages/Report"));
 const SystemPage = lazy(() => import("@/pages/SystemPage"));
+const OpsMonitor = lazy(() => import("@/pages/SystemPage/components/systemMonitor/SystemMonitor").then(module => ({ default: module.SystemMonitor })));
 const ApprovalPage = lazy(() => import("@/pages/ApprovalPage"));
 const ResoucePage = lazy(() => import("@/pages/resoucePage"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -91,6 +92,7 @@ const privateRouter = [
       { path: "model/finetune", element: <Finetune />, permission: 'model' },
       { path: "model", element: <Navigate to="management" replace /> },
       { path: "sys", element: <SystemPage />, permission: 'sys' },
+      { path: "ops", element: <OpsMonitor />, permission: 'ops' },
       { path: "approval", element: <ApprovalPage />, permission: 'sys' },
       { path: "log", element: <LogPage />, permission: "log" },
       { path: "log/chatlog/:fid/:cid/:type", element: <AppChatDetail />, permission: "log" },
@@ -167,6 +169,7 @@ const CHILD_ADMIN_ROUTE_PERMISSIONS = [
   "evaluation",
   "mark_task",
   "log",
+  "ops",
   "sys",
   "workstation",
 ] as const

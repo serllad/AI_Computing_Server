@@ -206,7 +206,8 @@
     "forBestExperience": "より快適にご利用いただくため、PC からアクセスしてください",
     "onlineDocumentation": "オンラインドキュメント",
     "changePwd": "パスワード変更",
-    "noAdminConsoleAccess": "管理コンソールにアクセスする権限がありません。"
+    "noAdminConsoleAccess": "管理コンソールにアクセスする権限がありません。",
+    "ops": "運用監視"
   },
   "system": {
     "userManagement": "ユーザー管理",
