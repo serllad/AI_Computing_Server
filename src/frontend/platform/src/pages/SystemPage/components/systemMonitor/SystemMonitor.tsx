@@ -8,8 +8,8 @@ function Header() {
   const { t } = useTranslation();
 
   return (
-    <header className="flex h-[58px] shrink-0 items-center gap-4">
-      <div className="flex items-center gap-3">
+    <header className="flex h-[58px] shrink-0 items-center gap-4 overflow-hidden">
+      <div className="flex shrink-0 items-center gap-3">
         <svg viewBox="0 0 40 40" className="h-[38px] w-[38px]" fill="none">
           <path d="M20 3l15 8.5v17L20 37 5 28.5v-17L20 3z" stroke="#00d9ff" strokeWidth="1.4" />
           <path
@@ -27,25 +27,25 @@ function Header() {
           >
             {t("monitor.headerTitle")}
           </h1>
-          <div className="mt-1 text-[10px] tracking-[4px] text-[#4f7fae]">
+          <div className="mt-1 whitespace-nowrap text-[10px] tracking-[4px] text-[#4f7fae]">
             {t("monitor.headerSub")}
           </div>
         </div>
       </div>
       <div
-        className="flex items-center gap-2 border border-[rgba(0,190,255,0.35)] bg-gradient-to-r from-[rgba(0,190,255,0.14)] to-[rgba(0,190,255,0.03)] px-4 py-1.5 text-sm text-[#c9ecff]"
+        className="flex min-w-0 items-center gap-2 border border-[rgba(0,190,255,0.35)] bg-gradient-to-r from-[rgba(0,190,255,0.14)] to-[rgba(0,190,255,0.03)] px-4 py-1.5 text-xs text-[#c9ecff]"
         style={{ clipPath: "polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%)" }}
       >
-        <span className="text-[#4f7fae]">{t("monitor.currentCluster")}</span>
-        <b className="font-semibold text-[#00d9ff]">{t("monitor.clusterName")}</b>
-        <span className="border-l border-white/10 pl-2 text-[11px] text-[#4f7fae]">
+        <span className="shrink-0 text-[#4f7fae]">{t("monitor.currentCluster")}</span>
+        <b className="min-w-0 truncate font-semibold text-[#00d9ff]">{t("monitor.clusterName")}</b>
+        <span className="shrink-0 whitespace-nowrap border-l border-white/10 pl-2 text-[11px] text-[#4f7fae]">
           {t("monitor.singleCluster")}
         </span>
       </div>
-      <div className="flex-1 text-center text-xs tracking-[2px] text-[#4f7fae]">
+      <div className="min-w-0 flex-1 truncate text-center text-xs tracking-[2px] text-[#4f7fae]">
         {t("monitor.centerHint")}
       </div>
-      <div className="flex items-center gap-4 text-xs text-[#86b4de]">
+      <div className="flex shrink-0 items-center gap-4 text-xs text-[#86b4de]">
         <span className="flex items-center gap-1.5 text-[#2ee6a8]">
           <i className="h-1.5 w-1.5 rounded-full bg-[#2ee6a8]" />
           {t("monitor.live")}
@@ -74,16 +74,16 @@ function KpiCard({ kpi }: { kpi: KpiDef }) {
 
   return (
     <div
-      className="relative overflow-hidden border border-[rgba(0,190,255,0.14)] bg-gradient-to-br from-[rgba(17,41,84,0.62)] to-[rgba(6,15,34,0.55)] px-3.5 py-2"
+      className="relative min-w-0 overflow-hidden border border-[rgba(0,190,255,0.14)] bg-gradient-to-br from-[rgba(17,41,84,0.62)] to-[rgba(6,15,34,0.55)] px-3.5 py-2"
       style={{ boxShadow: "inset 0 0 26px rgba(0,140,255,0.05)" }}
     >
       <span
         className="absolute bottom-0 left-0 top-0 w-[3px]"
         style={{ background: kpi.color, boxShadow: `0 0 12px ${kpi.color}` }}
       />
-      <div className="flex items-center justify-between">
-        <span className="text-xs text-[#86b4de]">{t(kpi.labelKey)}</span>
-        <span className={`text-[11px] ${up ? "text-[#2ee6a8]" : "text-[#ff5c6a]"}`}>
+      <div className="flex items-center justify-between gap-2">
+        <span className="min-w-0 truncate text-xs text-[#86b4de]">{t(kpi.labelKey)}</span>
+        <span className={`shrink-0 text-[11px] ${up ? "text-[#2ee6a8]" : "text-[#ff5c6a]"}`}>
           {up ? "▲" : "▼"} {Math.abs(kpi.delta).toFixed(1)}%
         </span>
       </div>
@@ -96,7 +96,7 @@ function KpiCard({ kpi }: { kpi: KpiDef }) {
         </span>
         <span className="text-xs text-[#86b4de]">{t(kpi.unitKey)}</span>
       </div>
-      <div className="absolute bottom-1.5 right-2 opacity-90">
+      <div className="pointer-events-none absolute bottom-1.5 right-2 opacity-90">
         <Sparkline values={kpi.series} color={kpi.color} />
       </div>
     </div>
@@ -105,7 +105,7 @@ function KpiCard({ kpi }: { kpi: KpiDef }) {
 
 function KpiRow() {
   return (
-    <section className="grid shrink-0 grid-cols-7 gap-2.5">
+    <section className="grid shrink-0 grid-cols-7 gap-3">
       {KPI_DEF.map((kpi) => (
         <KpiCard key={kpi.key} kpi={kpi} />
       ))}
@@ -115,7 +115,7 @@ function KpiRow() {
 
 function LeftColumn() {
   return (
-    <div className="flex min-h-0 flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       <Overview />
       <VendorMix />
       <ModelList />
@@ -125,7 +125,7 @@ function LeftColumn() {
 
 function CenterColumn() {
   return (
-    <div className="grid min-h-0 grid-rows-[1.22fr_0.92fr] gap-2.5">
+    <div className="flex flex-col gap-3">
       <Topology />
       <Trend />
     </div>
@@ -134,7 +134,7 @@ function CenterColumn() {
 
 function RightColumn() {
   return (
-    <div className="flex min-h-0 flex-col gap-2.5">
+    <div className="flex flex-col gap-3">
       <Alerts />
       <Tasks />
       <Logs />
@@ -145,10 +145,10 @@ function RightColumn() {
 export function SystemMonitor() {
   return (
     <div className="h-full w-full overflow-auto bg-[#030711] text-[#e3f4ff]">
-      <div className="flex min-h-full min-w-[1200px] flex-col gap-2.5 p-3.5">
+      <div className="flex min-h-full min-w-[1160px] flex-col gap-3 p-4">
         <Header />
         <KpiRow />
-        <div className="grid min-h-0 flex-1 grid-cols-[1.05fr_1.25fr_1fr] gap-2.5">
+        <div className="grid flex-1 grid-cols-[1.05fr_1.25fr_1fr] gap-3">
           <LeftColumn />
           <CenterColumn />
           <RightColumn />

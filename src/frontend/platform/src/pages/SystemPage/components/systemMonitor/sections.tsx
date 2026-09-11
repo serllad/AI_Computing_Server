@@ -48,7 +48,7 @@ export function Overview() {
 
   return (
     <Panel
-      className="min-h-0 flex-[1.05]"
+      className="flex-[1.05] min-h-[200px]"
       title={t("monitor.overviewTitle")}
       sub={t("monitor.overviewSub")}
       extra={t("monitor.sample", { time: "09:41:10" })}
@@ -83,7 +83,7 @@ export function VendorMix() {
 
   return (
     <Panel
-      className="min-h-0 flex-[1.25]"
+      className="flex-[1.25] min-h-[178px]"
       title={t("monitor.vendorMixTitle")}
       sub={t("monitor.vendorMixSub")}
       extra={t("monitor.totalCards")}
@@ -104,10 +104,10 @@ export function VendorMix() {
             );
             return (
               <div key={vendor.key} className="flex items-center gap-2 text-xs">
-                <span className="h-2 w-2 rounded-full" style={{ background: vendor.color }} />
-                <span className="text-[#c9ecff]">{t(`monitor.vendors.${vendor.key}`)}</span>
-                <span className="text-[#4f7fae]">{t(vendor.modelKey)}</span>
-                <span className="ml-auto text-[#eaf9ff]">
+                <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: vendor.color }} />
+                <span className="min-w-0 shrink-0 text-[#c9ecff]">{t(`monitor.vendors.${vendor.key}`)}</span>
+                <span className="min-w-0 truncate text-[#4f7fae]">{t(vendor.modelKey)}</span>
+                <span className="ml-auto shrink-0 text-[#eaf9ff]">
                   {count} {t("monitor.units.cardUnit")}
                 </span>
               </div>
@@ -124,7 +124,7 @@ export function ModelList() {
 
   return (
     <Panel
-      className="min-h-0 flex-[1.1]"
+      className="flex-[1.1] min-h-[148px]"
       title={t("monitor.modelTitle")}
       sub={t("monitor.modelSub")}
     >
@@ -137,10 +137,10 @@ export function ModelList() {
             : 0;
           return (
             <div key={vendor.key} className="flex items-center gap-2 text-xs">
-              <span className="h-2 w-2 rounded-full" style={{ background: vendor.color }} />
-              <span className="w-16 text-[#c9ecff]">{t(`monitor.vendors.${vendor.key}`)}</span>
-              <span className="w-16 text-[#4f7fae]">{t(vendor.modelKey)}</span>
-              <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-[rgba(120,180,240,0.12)]">
+              <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: vendor.color }} />
+              <span className="w-14 shrink-0 truncate text-[#c9ecff]">{t(`monitor.vendors.${vendor.key}`)}</span>
+              <span className="w-16 shrink-0 truncate text-[#4f7fae]">{t(vendor.modelKey)}</span>
+              <span className="h-1.5 min-w-8 flex-1 overflow-hidden rounded-full bg-[rgba(120,180,240,0.12)]">
                 <span
                   className="block h-full rounded-full"
                   style={{
@@ -149,8 +149,8 @@ export function ModelList() {
                   }}
                 />
               </span>
-              <span className="w-10 text-right text-[#eaf9ff]">{Math.round(utilization * 100)}%</span>
-              <span className="w-12 text-right text-[#00d9ff]">
+              <span className="w-10 shrink-0 text-right text-[#eaf9ff]">{Math.round(utilization * 100)}%</span>
+              <span className="w-12 shrink-0 text-right text-[#00d9ff]">
                 {cards} {t("monitor.units.cardUnit")}
               </span>
             </div>
@@ -167,21 +167,25 @@ function NodeCard({ host }: { host: Host }) {
   const average = host.cardUtil.reduce((sum, value) => sum + value, 0) / host.cardUtil.length;
 
   return (
-    <div className="flex flex-col gap-1.5 border border-[rgba(0,190,255,0.14)] bg-[rgba(0,20,50,0.4)] p-2">
+    <div className="flex flex-col gap-1.5 overflow-hidden border border-[rgba(0,190,255,0.14)] bg-[rgba(0,20,50,0.4)] p-2">
       <div className="flex items-center gap-1.5 text-[11px]">
-        <span className="h-1.5 w-1.5 rounded-full bg-[#2ee6a8] shadow-[0_0_6px_#2ee6a8]" />
-        <span className="font-mono text-[#dff3ff]">{host.ip}</span>
-        <span className="ml-auto rounded border border-[rgba(0,190,255,0.35)] px-1 text-[9px] text-[#c9ecff]">
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#2ee6a8] shadow-[0_0_6px_#2ee6a8]" />
+        <span className="min-w-0 truncate font-mono text-[#dff3ff]">{host.ip}</span>
+        <span className="ml-auto shrink-0 whitespace-nowrap rounded border border-[rgba(0,190,255,0.35)] px-1 text-[9px] text-[#c9ecff]">
           {t(host.roleKey)}
         </span>
       </div>
-      <div className="flex items-baseline justify-between text-[11px]">
-        <span className="truncate text-[#bcdcf6]">
+      <div className="flex items-baseline justify-between gap-1.5 text-[11px]">
+        <span className="min-w-0 truncate text-[#bcdcf6]">
           {t(`monitor.vendors.${host.vendor}`)} · {t(vendor.modelKey)}
         </span>
-        <span className="font-mono text-[#00d9ff]">×{host.cards}</span>
+        <span className="shrink-0 font-mono text-[#00d9ff]">×{host.cards}</span>
       </div>
-      <div className="grid grid-cols-4 content-center gap-1">
+      {/* One bar per accelerator, single row: width-adaptive and compact */}
+      <div
+        className="grid gap-1"
+        style={{ gridTemplateColumns: `repeat(${host.cardUtil.length}, minmax(0, 1fr))` }}
+      >
         {host.cardUtil.map((utilization, index) => (
           <span
             key={index}
@@ -191,9 +195,9 @@ function NodeCard({ host }: { host: Host }) {
           />
         ))}
       </div>
-      <div className="flex items-center justify-between text-[10px] text-[#4f7fae]">
-        <span>{t("monitor.nodeMemory", { count: host.cards })}</span>
-        <span className="font-mono text-[#eaf9ff]">{Math.round(average * 100)}%</span>
+      <div className="flex items-center justify-between gap-1.5 text-[10px] text-[#4f7fae]">
+        <span className="shrink-0">{t("monitor.nodeMemory", { count: host.cards })}</span>
+        <span className="shrink-0 font-mono text-[#eaf9ff]">{Math.round(average * 100)}%</span>
       </div>
     </div>
   );
@@ -204,7 +208,7 @@ export function Topology() {
 
   return (
     <Panel
-      className="min-h-0"
+      className="flex-[1.15] min-h-[250px]"
       title={t("monitor.topologyTitle")}
       sub={t("monitor.topologySub")}
       extra={
@@ -214,7 +218,10 @@ export function Topology() {
         </span>
       }
     >
-      <div className="grid h-full grid-cols-6 gap-2 p-2">
+      {/* auto-fill keeps node cards readable: column count follows available width.
+          Row floor (minmax) prevents vertical crush — extra height stretches cards,
+          insufficient height scrolls instead of clipping. */}
+      <div className="grid h-full auto-rows-[minmax(104px,1fr)] grid-cols-[repeat(auto-fill,minmax(132px,1fr))] content-start gap-2 overflow-y-auto p-2">
         {HOSTS.map((host) => (
           <NodeCard key={host.id} host={host} />
         ))}
@@ -232,11 +239,14 @@ export function Trend() {
 
   return (
     <Panel
-      className="min-h-0"
+      className="flex-1 min-h-[236px]"
       title={t("monitor.trendTitle")}
       sub={t("monitor.trendSub")}
-      extra={
-        <span className="flex items-center gap-3 text-[10px] text-[#86b4de]">
+      extra={t("monitor.trendRange")}
+    >
+      <div className="flex h-full min-h-0 flex-col p-1.5 pb-2">
+        {/* Legend lives inside the panel body so the header never overflows */}
+        <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 px-1 pb-1 text-[10px] text-[#86b4de]">
           <span className="flex items-center gap-1">
             <i className="h-1 w-2.5 bg-[#00d9ff]" />
             {t("monitor.trendLegend.util")}
@@ -247,12 +257,10 @@ export function Trend() {
             {t("monitor.trendLegend.vmem")}
             <b className="font-mono text-[#eaf9ff]">{lastVmem.toFixed(1)}%</b>
           </span>
-          <span>{t("monitor.trendRange")}</span>
-        </span>
-      }
-    >
-      <div className="h-full p-1.5 pb-2">
-        <TrendChart util={util} vmem={vmem} />
+        </div>
+        <div className="min-h-0 flex-1">
+          <TrendChart util={util} vmem={vmem} />
+        </div>
       </div>
     </Panel>
   );
@@ -292,11 +300,11 @@ export function Alerts() {
 
   return (
     <Panel
-      className="min-h-0 flex-[1.5]"
+      className="flex-[1.5] min-h-[176px]"
       title={t("monitor.alertsTitle")}
       sub={t("monitor.alertsSub")}
       extra={
-        <span className="flex gap-1.5">
+        <span className="flex flex-wrap justify-end gap-1.5">
           {severityKeys.map((severity) => (
             <span
               key={severity}
@@ -328,7 +336,7 @@ export function Tasks() {
 
   return (
     <Panel
-      className="min-h-0 flex-[1.25]"
+      className="flex-[1.25] min-h-[208px]"
       title={t("monitor.tasksTitle")}
       sub={t("monitor.tasksSub")}
       extra={<span className="text-[#ffd98a]">{t("monitor.fairShare")}</span>}
@@ -368,12 +376,12 @@ export function Logs() {
 
   return (
     <Panel
-      className="min-h-0 flex-[1]"
+      className="flex-1 min-h-[166px]"
       title={t("monitor.logsTitle")}
       sub={t("monitor.logsSub")}
       extra={t("monitor.realtime")}
     >
-      <div className="h-full overflow-y-auto px-2 pb-1.5 font-mono text-[11px] leading-relaxed text-[#9ec7ea]">
+      <div className="h-full overflow-auto px-2 pb-1.5 font-mono text-[11px] leading-relaxed text-[#9ec7ea]">
         {LOGS.map((log, index) => (
           <div key={index} className="whitespace-nowrap">
             <span className="text-[#3f6d96]">{log.time}</span>{" "}
@@ -396,18 +404,18 @@ function HostRow({ host }: { host: Host }) {
     <tr className="border-b border-white/5 hover:bg-[rgba(0,190,255,0.07)]">
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-sm" style={{ background: vendor.color }} />
+          <span className="h-1.5 w-1.5 shrink-0 rounded-sm" style={{ background: vendor.color }} />
           <span className="font-mono text-[#dff3ff]">{host.ip}</span>
           <span className="text-[#4f7fae]">{t(`monitor.nodes.${host.id}`)}</span>
         </div>
       </td>
-      <td className="px-2 py-1.5 text-[#bcdcf6]">
+      <td className="max-w-[180px] truncate px-2 py-1.5 text-[#bcdcf6]">
         {t(`monitor.vendors.${host.vendor}`)} / {t(vendor.modelKey)}
       </td>
       <td className="px-2 py-1.5 font-mono text-[#00d9ff]">{host.cards}</td>
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-[86px] overflow-hidden rounded bg-[rgba(120,180,240,0.12)]">
+          <span className="h-1.5 w-[64px] overflow-hidden rounded bg-[rgba(120,180,240,0.12)]">
             <span
               className="block h-full rounded"
               style={{ width: `${util}%`, background: heatColor(host.baseU) }}
@@ -418,7 +426,7 @@ function HostRow({ host }: { host: Host }) {
       </td>
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-[86px] overflow-hidden rounded bg-[rgba(120,180,240,0.12)]">
+          <span className="h-1.5 w-[64px] overflow-hidden rounded bg-[rgba(120,180,240,0.12)]">
             <span
               className="block h-full rounded"
               style={{ width: `${vmem}%`, background: heatColor(host.baseV) }}
@@ -429,13 +437,13 @@ function HostRow({ host }: { host: Host }) {
       </td>
       <td className="px-2 py-1.5">
         <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-[86px] overflow-hidden rounded bg-[rgba(120,180,240,0.12)]">
+          <span className="h-1.5 w-[64px] overflow-hidden rounded bg-[rgba(120,180,240,0.12)]">
             <span className="block h-full rounded" style={{ width: `${mem}%`, background: "#3d8bff" }} />
           </span>
           <span className="font-mono text-[11px] text-[#9ec7ea]">{mem}%</span>
         </div>
       </td>
-      <td className="px-2 py-1.5 font-mono text-[#9ec7ea]">
+      <td className="whitespace-nowrap px-2 py-1.5 font-mono text-[#9ec7ea]">
         ↓{(host.baseNet * 0.72).toFixed(1)}G ↑{(host.baseNet * 0.28).toFixed(1)}G
       </td>
       <td className="px-2 py-1.5 font-mono text-[#9ec7ea]">
@@ -475,17 +483,17 @@ export function HostTable() {
 
   return (
     <section
-      className="flex h-[232px] shrink-0 flex-col overflow-hidden border border-[rgba(0,190,255,0.14)] bg-gradient-to-br from-[rgba(17,41,84,0.62)] to-[rgba(6,15,34,0.55)]"
+      className="flex h-[240px] shrink-0 flex-col overflow-hidden border border-[rgba(0,190,255,0.14)] bg-gradient-to-br from-[rgba(17,41,84,0.62)] to-[rgba(6,15,34,0.55)]"
       style={{ boxShadow: "inset 0 0 26px rgba(0,140,255,0.05)" }}
     >
-      <div className="flex shrink-0 items-center gap-2 px-3 pb-1 pt-2">
-        <span className="h-1.5 w-1.5 bg-[#00d9ff] shadow-[0_0_6px_rgba(0,217,255,0.8)]" />
-        <span className="text-sm font-medium text-[#e3f4ff]">{t("monitor.tableTitle")}</span>
-        <span className="text-[10px] tracking-wider text-[#4f7fae]">{t("monitor.tableSub")}</span>
-        <span className="ml-auto text-[11px] text-[#4f7fae]">{t("monitor.tableHint")}</span>
+      <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-x-2 gap-y-1 px-3 pb-1 pt-2">
+        <span className="h-1.5 w-1.5 shrink-0 bg-[#00d9ff] shadow-[0_0_6px_rgba(0,217,255,0.8)]" />
+        <span className="min-w-0 truncate text-sm font-medium text-[#e3f4ff]">{t("monitor.tableTitle")}</span>
+        <span className="min-w-0 truncate text-[10px] tracking-wider text-[#4f7fae]">{t("monitor.tableSub")}</span>
+        <span className="ml-auto shrink-0 text-[11px] text-[#4f7fae]">{t("monitor.tableHint")}</span>
       </div>
       <div className="min-h-0 flex-1 overflow-auto px-2 pb-2">
-        <table className="w-full border-collapse text-xs">
+        <table className="w-full min-w-[980px] border-collapse text-xs">
           <thead>
             <tr>
               {columns.map((column) => (
