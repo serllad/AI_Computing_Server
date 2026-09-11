@@ -63,6 +63,7 @@ class WebMenuResource(Enum):
     # System management
     SUBSCRIPTION = "subscription"  # Subscription management
     OPS = "ops"  # Ops monitoring console
+    ONLINE_DEV = "onlinedev"  # Online development console
     # Workbench sidebar (user portal) — granular toggles under ``workstation``
     HOME = "home"  # Chat / 首页
     LINSIGHT_TASK_MODE = "linsight_task_mode"  # 灵思任务模式 (sub-toggle under 首页, F035)

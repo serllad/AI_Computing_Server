@@ -207,7 +207,8 @@
     "onlineDocumentation": "オンラインドキュメント",
     "changePwd": "パスワード変更",
     "noAdminConsoleAccess": "管理コンソールにアクセスする権限がありません。",
-    "ops": "運用監視"
+    "ops": "運用監視",
+    "onlineDev": "オンライン開発"
   },
   "system": {
     "userManagement": "ユーザー管理",

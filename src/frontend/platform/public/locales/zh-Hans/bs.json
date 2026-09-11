@@ -208,7 +208,8 @@
     "onlineDocumentation": "在线文档",
     "changePwd": "修改密码",
     "noAdminConsoleAccess": "当前用户没有访问管理后台的权限",
-    "ops": "运维监控"
+    "ops": "运维监控",
+    "onlineDev": "在线开发"
   },
   "system": {
     "userManagement": "用户管理",

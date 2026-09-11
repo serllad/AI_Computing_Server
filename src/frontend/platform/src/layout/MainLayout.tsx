@@ -19,7 +19,7 @@ import { bsConfirm } from "@/components/bs-ui/alertDialog/useConfirm";
 import { SelectHover, SelectHoverItem } from "@/components/bs-ui/select/hover";
 import { locationContext } from "@/contexts/locationContext";
 import i18next from "i18next";
-import { Activity, Check, ChevronDown, GanttChartIcon, Lock, MoonStar, Sun } from "lucide-react";
+import { Activity, Check, ChevronDown, Code2, GanttChartIcon, Lock, MoonStar, Sun } from "lucide-react";
 import { ApprovalMenuIcon } from "@/components/bs-icons/menu/approval";
 import { TenantMenuIcon } from "@/components/bs-icons/menu/tenant";
 import { Suspense, useContext, useEffect, useMemo, useState } from "react";
@@ -234,6 +234,12 @@ export default function MainLayout() {
                             showAdminNav('ops') &&
                             <NavLink to={isMenu('ops') ? '/ops' : '/menu-pending?menu=ops'} className={`navlink inline-flex rounded-lg w-full px-6 hover:bg-nav-hover h-12 mb-[3.5px]`}>
                                 <Activity className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[56px] text-[14px] leading-[48px]">{t('menu.ops')}</span>
+                            </NavLink>
+                        }
+                        {
+                            showAdminNav('onlinedev') &&
+                            <NavLink to={isMenu('onlinedev') ? '/onlinedev' : '/menu-pending?menu=onlinedev'} className={`navlink inline-flex rounded-lg w-full px-6 hover:bg-nav-hover h-12 mb-[3.5px]`}>
+                                <Code2 className="h-6 w-6 my-[12px]" /><span className="mx-[14px] max-w-[56px] text-[14px] leading-[48px]">{t('menu.onlineDev')}</span>
                             </NavLink>
                         }
                         {

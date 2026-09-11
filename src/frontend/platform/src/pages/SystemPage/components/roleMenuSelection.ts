@@ -7,6 +7,7 @@ export const ADMIN_CHILD_MENUS = [
   "model",
   "log",
   "ops",
+  "onlinedev",
   "knowledge",
   "create_knowledge",
   "build",

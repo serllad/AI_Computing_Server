@@ -109,6 +109,7 @@ describe("resolveRoutePermissions", () => {
       "mark_task",
       "log",
       "ops",
+      "onlinedev",
       "sys",
       "workstation",
     ])
