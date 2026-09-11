@@ -96,20 +96,27 @@ services:
       BS_MILVUS_IS_PARTITION: 'true'
       BS_MILVUS_PARTITION_SUFFIX: '1'
       BS_ELASTICSEARCH_URL: 'http://elasticsearch:9200'
-      BS_ELASTICSEARCH_SSL_VERIFY: '{}'  # 可根据自己部署的密码进行配置 '{"basic_auth": ("elastic", "elastic")}'
+      BS_ELASTICSEARCH_SSL_VERIFY: '{}'
       BS_MINIO_SCHEMA: 'false'
       BS_MINIO_CERT_CHECK: 'false'
       BS_MINIO_ENDPOINT: 'minio:9000'
       BS_MINIO_SHAREPOINT: 'minio:9000'
       BS_MINIO_ACCESS_KEY: 'minioadmin'
       BS_MINIO_SECRET_KEY: 'minioadmin'
+      # ===== 新增代理配置 =====
+      HTTP_PROXY: "http://host.docker.internal:7890"
+      HTTPS_PROXY: "http://host.docker.internal:7890"
+      http_proxy: "http://host.docker.internal:7890"
+      https_proxy: "http://host.docker.internal:7890"
+      NO_PROXY: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
+      no_proxy: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/config/config.yaml:/app/bisheng/config.yaml
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/entrypoint.sh:/app/entrypoint.sh
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/bisheng:/app/data
     security_opt:
       - seccomp:unconfined
-    command: sh entrypoint.sh api  # 启动api服务
+    command: sh entrypoint.sh api
     restart: on-failure
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
@@ -122,7 +129,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      # openfga 官方镜像无 HEALTHCHECK，Compose v5 无法用 service_healthy
       openfga:
         condition: service_started
 
@@ -136,20 +142,27 @@ services:
       BS_MILVUS_IS_PARTITION: 'true'
       BS_MILVUS_PARTITION_SUFFIX: '1'
       BS_ELASTICSEARCH_URL: 'http://elasticsearch:9200'
-      BS_ELASTICSEARCH_SSL_VERIFY: '{}'  # 可根据自己部署的密码进行配置 '{"basic_auth": ("elastic", "elastic")}'
+      BS_ELASTICSEARCH_SSL_VERIFY: '{}'
       BS_MINIO_SCHEMA: 'false'
       BS_MINIO_CERT_CHECK: 'false'
       BS_MINIO_ENDPOINT: 'minio:9000'
       BS_MINIO_SHAREPOINT: 'minio:9000'
       BS_MINIO_ACCESS_KEY: 'minioadmin'
       BS_MINIO_SECRET_KEY: 'minioadmin'
+      # ===== 新增代理配置 =====
+      HTTP_PROXY: "http://host.docker.internal:7890"
+      HTTPS_PROXY: "http://host.docker.internal:7890"
+      http_proxy: "http://host.docker.internal:7890"
+      https_proxy: "http://host.docker.internal:7890"
+      NO_PROXY: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
+      no_proxy: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/config/config.yaml:/app/bisheng/config.yaml
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/entrypoint.sh:/app/entrypoint.sh
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/bisheng:/app/data
     security_opt:
       - seccomp:unconfined
-    command: sh entrypoint.sh worker  # 启动celery的异步worker服务，用来处理一些耗时的任务
+    command: sh entrypoint.sh worker
     restart: on-failure
     depends_on:
       mysql:
