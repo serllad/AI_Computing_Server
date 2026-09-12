@@ -124,7 +124,9 @@
     "modelManagement": "模型供应商",
     "name": "模型名称",
     "status": "状态",
-    "actions": "操作"
+    "actions": "操作",
+    "evalLoss": "评估损失",
+    "bleu": "BLEU 分数"
   },
   "finetune": {
     "rtServiceManagement": "FT服务管理",

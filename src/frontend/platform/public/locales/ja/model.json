@@ -124,7 +124,9 @@
     "modelManagement": "モデルプロバイダー",
     "name": "モデル名",
     "status": "状態",
-    "actions": "操作"
+    "actions": "操作",
+    "evalLoss": "評価損失",
+    "bleu": "BLEUスコア"
   },
   "finetune": {
     "rtServiceManagement": "FTサービス管理",

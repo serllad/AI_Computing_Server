@@ -126,7 +126,9 @@
     "modelManagement": "Model Provider",
     "name": "Model Name",
     "status": "Status",
-    "actions": "Actions"
+    "actions": "Actions",
+    "evalLoss": "Eval Loss",
+    "bleu": "BLEU Score"
   },
   "finetune": {
     "rtServiceManagement": "FT Service Management",

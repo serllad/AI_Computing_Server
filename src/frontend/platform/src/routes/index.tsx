@@ -40,6 +40,7 @@ const Report = lazy(() => import("@/pages/Report"));
 const SystemPage = lazy(() => import("@/pages/SystemPage"));
 const OpsMonitor = lazy(() => import("@/pages/SystemPage/components/systemMonitor/SystemMonitor").then(module => ({ default: module.SystemMonitor })));
 const OnlineDev = lazy(() => import("@/pages/OnlineDev").then(module => ({ default: module.OnlineDev })));
+const LocalModelRepo = lazy(() => import("@/pages/ModelPage/manage/LocalModelPrototype").then(module => ({ default: module.LocalModelPrototype })));
 const ApprovalPage = lazy(() => import("@/pages/ApprovalPage"));
 const ResoucePage = lazy(() => import("@/pages/resoucePage"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -91,6 +92,7 @@ const privateRouter = [
       { path: "build/temps/:type", element: <Templates />, permission: 'create_app', },
       { path: "model/management", element: <Management />, permission: 'model' },
       { path: "model/finetune", element: <Finetune />, permission: 'model' },
+      { path: "model/local-repo", element: <LocalModelRepo />, permission: 'model' },
       { path: "model", element: <Navigate to="management" replace /> },
       { path: "sys", element: <SystemPage />, permission: 'sys' },
       { path: "ops", element: <OpsMonitor />, permission: 'ops' },

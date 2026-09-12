@@ -26,6 +26,12 @@ const INITIAL_MODELS: LocalModel[] = [
   { id: "qwen-legal", name: "Qwen2.5-7B-Legal-SFT", source: "finetuned", parameters: "7B", precision: "BF16", deployed: true, deployTime: "2026-09-12 14:30", parentId: "qwen", dataset: "legal-qa-v2", hyperparams: { epochs: 3, lr: "5e-5", batch_size: 4 }, metrics: { eval_loss: 1.02, bleu: 68.4 } },
 ];
 
+function sourceLabel(t: (key: string) => string, source: LocalModel["source"]) {
+  if (source === "builtin") return t("builtIn");
+  if (source === "finetuned") return t("fineTuned");
+  return t("uploadModel");
+}
+
 export function LocalModelPrototype() {
   const { t } = useTranslation("model");
   const { toast } = useToast();
@@ -35,56 +41,60 @@ export function LocalModelPrototype() {
 
   const modelById = useMemo(() => new Map(models.map((model) => [model.id, model])), [models]);
 
+  const notify = (key: string) => toast({ variant: "success", title: t(key), description: t(key) });
+
   const handleDeploy = (id: string) => {
     setModels((prev) => prev.map((model) => model.id === id ? { ...model, deployed: !model.deployed, deployTime: model.deployed ? undefined : "2026-09-12 15:00" } : model));
-    toast({ variant: "success", title: t("deploy"), description: t("deploy") });
+    notify("deploy");
   };
 
   const handleRollback = (id: string) => {
     setModels((prev) => prev.map((model) => model.id === id ? { ...model, deployed: false, deployTime: undefined } : model));
-    toast({ variant: "success", title: t("rollback"), description: t("rollback") });
+    notify("rollback");
   };
 
   const handleDelete = (id: string) => {
     setModels((prev) => prev.filter((model) => model.id !== id));
-    toast({ variant: "success", title: t("deleteModel"), description: t("deleteModel") });
+    notify("deleteModel");
   };
 
   const selected = selectedId ? modelById.get(selectedId) : null;
 
   return (
-    <div className="flex h-full flex-col gap-3 px-2 py-4">
+    <div className="flex h-full flex-col gap-4 px-4 py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <h1 className="text-base font-semibold">{t("localRepo")}</h1>
-          <Button type="button" size="sm" onClick={() => toast({ variant: "success", title: t("uploadModel"), description: t("uploadModel") })}>{t("uploadModel")}</Button>
+        <div>
+          <h1 className="text-xl font-semibold">{t("localRepo")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("localModelList")}</p>
         </div>
-        <Badge variant="secondary">{t("localModelList")}</Badge>
+        <Button type="button" onClick={() => notify("uploadModel")}>{t("uploadModel")}</Button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto rounded-md border">
+      <div className="min-h-0 flex-1 overflow-auto rounded-xl border bg-muted/10">
         <table className="w-full text-sm">
-          <thead>
+          <thead className="sticky top-0 bg-muted/80">
             <tr className="border-b text-left text-xs text-muted-foreground">
-              <th className="px-3 py-2">{t("name")}</th>
-              <th className="px-3 py-2">{t("source")}</th>
-              <th className="px-3 py-2">{t("parameters")}</th>
-              <th className="px-3 py-2">{t("precision")}</th>
-              <th className="px-3 py-2">{t("status")}</th>
-              <th className="px-3 py-2 text-right">{t("actions")}</th>
+              <th className="px-4 py-3">{t("name")}</th>
+              <th className="px-4 py-3">{t("source")}</th>
+              <th className="px-4 py-3">{t("parameters")}</th>
+              <th className="px-4 py-3">{t("precision")}</th>
+              <th className="px-4 py-3">{t("status")}</th>
+              <th className="px-4 py-3 text-right">{t("actions")}</th>
             </tr>
           </thead>
           <tbody>
             {models.map((model) => (
-              <tr key={model.id} className="border-b">
-                <td className="px-3 py-2 font-medium">{model.name}</td>
-                <td className="px-3 py-2">{t(model.source === "builtin" ? "builtIn" : model.source === "finetuned" ? "fineTuned" : "uploadModel")}</td>
-                <td className="px-3 py-2">{model.parameters}</td>
-                <td className="px-3 py-2">{model.precision}</td>
-                <td className="px-3 py-2">
+              <tr key={model.id} className="border-b transition-colors hover:bg-muted/40">
+                <td className="px-4 py-3 font-medium">{model.name}</td>
+                <td className="px-4 py-3">
+                  <Badge variant="outline">{sourceLabel(t, model.source)}</Badge>
+                </td>
+                <td className="px-4 py-3">{model.parameters}</td>
+                <td className="px-4 py-3">{model.precision}</td>
+                <td className="px-4 py-3">
                   <span className={model.deployed ? "text-green-600" : "text-muted-foreground"}>{model.deployed ? t("statusDeployed") : t("statusNotDeployed")}</span>
                 </td>
-                <td className="px-3 py-2 text-right">
+                <td className="px-4 py-3 text-right">
                   <Button type="button" size="sm" variant="link" onClick={() => handleDeploy(model.id)}>{model.deployed ? t("undeploy") : t("deploy")}</Button>
                   <Button type="button" size="sm" variant="link" onClick={() => setSelectedId(model.id)}>{t("viewDetails")}</Button>
                   {model.deployed && model.parentId && (
@@ -99,44 +109,65 @@ export function LocalModelPrototype() {
       </div>
 
       <Dialog open={Boolean(selected)} onOpenChange={(open) => !open && setSelectedId(null)}>
-        <DialogContent className="sm:max-w-[720px]">
+        <DialogContent className="sm:max-w-[760px]">
           <DialogHeader>
             <DialogTitle>{t("viewDetails")}</DialogTitle>
           </DialogHeader>
           {selected && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">{t("name")}: </span>{selected.name}</div>
-                <div><span className="text-muted-foreground">{t("parameters")}: </span>{selected.parameters}</div>
-                <div><span className="text-muted-foreground">{t("precision")}: </span>{selected.precision}</div>
-                <div><span className="text-muted-foreground">{t("deployTime")}: </span>{selected.deployTime || "--"}</div>
+              <div className="grid grid-cols-2 gap-3 rounded-xl border bg-muted/20 p-4 text-sm">
+                <div><span className="text-muted-foreground">{t("name")}：</span>{selected.name}</div>
+                <div><span className="text-muted-foreground">{t("parameters")}：</span>{selected.parameters}</div>
+                <div><span className="text-muted-foreground">{t("precision")}：</span>{selected.precision}</div>
+                <div><span className="text-muted-foreground">{t("deployTime")}：</span>{selected.deployTime || "--"}</div>
               </div>
 
               {selected.source === "finetuned" && (
-                <div className="space-y-3 rounded-md border p-3">
-                  <div className="text-sm font-medium">{t("trainingDataset")}</div>
-                  <div>{selected.dataset}</div>
-                  <div className="text-sm font-medium">{t("hyperparameters")}</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(selected.hyperparams ?? {}).map(([key, value]) => (
-                      <div key={key}>{key}: {value}</div>
-                    ))}
+                <div className="space-y-4">
+                  <div className="rounded-xl border p-4">
+                    <div className="text-sm font-medium">{t("trainingDataset")}</div>
+                    <div className="mt-1 text-muted-foreground">{selected.dataset}</div>
                   </div>
-                  <div className="text-sm font-medium">{t("evaluationMetrics")}</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {Object.entries(selected.metrics ?? {}).map(([key, value]) => (
-                      <div key={key}>{key}: {value}</div>
-                    ))}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-xl border p-4">
+                      <div className="text-sm font-medium">{t("hyperparameters")}</div>
+                      <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                        {Object.entries(selected.hyperparams ?? {}).map(([key, value]) => (
+                          <div key={key}>{key}: {value}</div>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border p-4">
+                      <div className="text-sm font-medium">{t("evaluationMetrics")}</div>
+                      <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+                        <div>{t("evalLoss")}: {selected.metrics?.eval_loss ?? "--"}</div>
+                        <div>{t("bleu")}: {selected.metrics?.bleu ?? "--"}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium">{t("lineage")}</div>
-                  <div className="flex items-center gap-2">
-                    {selected.parentId && (
-                      <button type="button" className="rounded border px-3 py-1 text-xs" onClick={() => setCompareParentId(selected.parentId ?? null)}>
-                        {modelById.get(selected.parentId)?.name ?? selected.parentId}
-                      </button>
-                    )}
-                    <span>→</span>
-                    <span className="rounded border px-3 py-1 text-xs">{selected.name}</span>
+
+                  <div className="rounded-xl border p-4">
+                    <div className="text-sm font-medium">{t("lineage")}</div>
+                    <div className="mt-3 flex items-center gap-4">
+                      {selected.parentId && (
+                        <>
+                          <button
+                            type="button"
+                            className="min-w-[180px] rounded-xl border border-primary/20 bg-primary/5 p-3 text-left transition hover:bg-primary/10"
+                            onClick={() => setCompareParentId(selected.parentId ?? null)}
+                          >
+                            <div className="text-xs text-muted-foreground">{t("parentModel")}</div>
+                            <div className="mt-1 font-medium">{modelById.get(selected.parentId)?.name ?? selected.parentId}</div>
+                          </button>
+                          <div className="h-px flex-1 bg-gradient-to-r from-primary/40 to-primary/10" />
+                        </>
+                      )}
+                      <div className="min-w-[180px] rounded-xl border border-green-500/30 bg-green-500/5 p-3">
+                        <div className="text-xs text-muted-foreground">{t("name")}</div>
+                        <div className="mt-1 font-medium">{selected.name}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -146,21 +177,25 @@ export function LocalModelPrototype() {
       </Dialog>
 
       <Dialog open={Boolean(compareParentId)} onOpenChange={(open) => !open && setCompareParentId(null)}>
-        <DialogContent className="sm:max-w-[560px]">
+        <DialogContent className="sm:max-w-[620px]">
           <DialogHeader>
             <DialogTitle>{t("compareMetrics")}</DialogTitle>
           </DialogHeader>
           {compareParentId && selected && (
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div className="rounded-md border p-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="rounded-xl border p-4">
                 <div className="font-medium">{modelById.get(compareParentId)?.name ?? compareParentId}</div>
-                <div className="mt-2 text-muted-foreground">eval_loss: --</div>
-                <div className="text-muted-foreground">bleu: --</div>
+                <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+                  <div>{t("evalLoss")}: --</div>
+                  <div>{t("bleu")}: --</div>
+                </div>
               </div>
-              <div className="rounded-md border p-3">
+              <div className="rounded-xl border border-primary/20 p-4">
                 <div className="font-medium">{selected.name}</div>
-                <div className="mt-2 text-muted-foreground">eval_loss: {selected.metrics?.eval_loss ?? "--"}</div>
-                <div className="text-muted-foreground">bleu: {selected.metrics?.bleu ?? "--"}</div>
+                <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+                  <div>{t("evalLoss")}: {selected.metrics?.eval_loss ?? "--"}</div>
+                  <div>{t("bleu")}: {selected.metrics?.bleu ?? "--"}</div>
+                </div>
               </div>
             </div>
           )}

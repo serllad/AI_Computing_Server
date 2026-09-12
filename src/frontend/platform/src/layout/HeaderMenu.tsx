@@ -50,7 +50,7 @@ export default function HeaderMenu({ }) {
         </div>
     }
 
-    if (['/model/management', '/model/finetune'].includes(location.pathname.replace(__APP_ENV__.BASE_URL, ''))) {
+    if (['/model/management', '/model/finetune', '/model/local-repo'].includes(location.pathname.replace(__APP_ENV__.BASE_URL, ''))) {
         return <div className="build-tab flex justify-center h-[65px] items-center relative">
             <div className="px-4">
                 <NavLink to={'model/management'} className="group flex gap-2 items-center px-8 py-2 rounded-md navlink">
@@ -62,6 +62,12 @@ export default function HeaderMenu({ }) {
                 <NavLink to={'model/finetune'} className="group flex gap-2 items-center px-8 py-2 rounded-md navlink">
                     <TabIcon className="text-muted-foreground group-hover:text-primary dark:group-hover:text-[#fff]"></TabIcon>
                     <span className="text-sm font-bold text-muted-foreground group-hover:text-primary dark:group-hover:text-[#fff]">{t('model.modelFineTune')}</span>
+                </NavLink>
+            </div>
+            <div className="px-4">
+                <NavLink to={'model/local-repo'} className="group flex gap-2 items-center px-8 py-2 rounded-md navlink">
+                    <TabIcon className="text-muted-foreground group-hover:text-primary dark:group-hover:text-[#fff]"></TabIcon>
+                    <span className="text-sm font-bold text-muted-foreground group-hover:text-primary dark:group-hover:text-[#fff]">{t('model.localRepo')}</span>
                 </NavLink>
             </div>
         </div>
