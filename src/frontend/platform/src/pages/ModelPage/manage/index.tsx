@@ -144,6 +144,7 @@ export default function Management() {
     const { user } = useContext(userContext)
     const { appConfig } = useContext(locationContext)
     const [modelId, setModelId] = useState(null)
+    const [localRepo, setLocalRepo] = useState(false)
     const [systemModel, setSystemModel] = useState(false)
     const [systemModelTab, setSystemModelTab] = useState<string | undefined>(undefined)
     const [loading, setLoading] = useState(false)
@@ -210,6 +211,8 @@ export default function Management() {
             : server))
     }
 
+    if (localRepo) return <div className="h-full px-2 py-4"><div className="mb-3"><Button variant="outline" onClick={() => setLocalRepo(false)}>{t('cancel')}</Button></div><LocalModelPrototype /></div>
+
     if (modelId) return <ModelConfig
         id={modelId}
         onGetName={handleGetRepeatName}
@@ -249,6 +252,7 @@ export default function Management() {
                         {t('model.systemModelSettings')}
                     </Button>}
                     {canManage && <Button onClick={() => setModelId(-1)}>{t('model.addModel')}</Button>}
+                    <Button variant="secondary" onClick={() => setLocalRepo(true)}>{t('model.localRepo')}</Button>
                     <Button className="bg-black-button" onClick={reload}>{t('model.refresh')}</Button>
                 </div>
             </div>
