@@ -1,8 +1,10 @@
+// cache-bust local model repo
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import ContextWrapper from "./contexts";
 import reportWebVitals from "./reportWebVitals";
 import './i18n';
+document.documentElement.dataset.build = 'datasetdev-local-repo-v3';
 // @ts-ignore
 import "./style/index.css";
 // @ts-ignore
