@@ -86,7 +86,7 @@
     "assistantAutoOptimizationModel": "Auto Optimization",
     "yes": "Yes",
     "no": "No",
-    "selectModel": "Select",
+    "selectModel": "Select Model",
     "defaultEvaluationFeature": "Default Eval Model",
     "machineName": "Machine Name",
     "gpuNumber": "GPU Number",
@@ -128,7 +128,9 @@
     "status": "Status",
     "actions": "Actions",
     "evalLoss": "Eval Loss",
-    "bleu": "BLEU Score"
+    "bleu": "BLEU Score",
+    "importByDirectory": "Directory Import",
+    "modelPath": "Model Path"
   },
   "finetune": {
     "rtServiceManagement": "FT Service Management",

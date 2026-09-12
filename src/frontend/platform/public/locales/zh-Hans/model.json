@@ -126,7 +126,9 @@
     "status": "状态",
     "actions": "操作",
     "evalLoss": "评估损失",
-    "bleu": "BLEU 分数"
+    "bleu": "BLEU 分数",
+    "importByDirectory": "目录导入",
+    "modelPath": "模型路径"
   },
   "finetune": {
     "rtServiceManagement": "FT服务管理",

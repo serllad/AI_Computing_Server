@@ -1,8 +1,9 @@
 import { Badge } from "@/components/bs-ui/badge";
 import { Button } from "@/components/bs-ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/bs-ui/dialog";
+import { Input } from "@/components/bs-ui/input";
 import { useToast } from "@/components/bs-ui/toast/use-toast";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 interface LocalModel {
@@ -33,11 +34,19 @@ function sourceLabel(t: (key: string) => string, source: LocalModel["source"]) {
 }
 
 export function LocalModelPrototype() {
-  const { t } = useTranslation("model");
+  const { t, i18n } = useTranslation("model");
   const { toast } = useToast();
   const [models, setModels] = useState<LocalModel[]>(INITIAL_MODELS);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [compareParentId, setCompareParentId] = useState<string | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [uploadName, setUploadName] = useState("");
+  const [importForm, setImportForm] = useState({ path: "", name: "", parameters: "7B", precision: "BF16" });
+
+  useEffect(() => {
+    i18n.loadNamespaces("model");
+  }, [i18n]);
 
   const modelById = useMemo(() => new Map(models.map((model) => [model.id, model])), [models]);
 
@@ -58,6 +67,22 @@ export function LocalModelPrototype() {
     notify("deleteModel");
   };
 
+  const handleUploadModel = () => {
+    const name = uploadName.trim() || "Qwen2.5-7B-Instruct";
+    setModels((prev) => [...prev, { id: `upload-${Date.now()}`, name, source: "upload", parameters: "7B", precision: "BF16", deployed: false }]);
+    setUploadName("");
+    setUploadOpen(false);
+    notify("uploadModel");
+  };
+
+  const handleImportModel = () => {
+    const name = importForm.name.trim() || importForm.path.split(/[\\/]/).pop() || "local-model";
+    setModels((prev) => [...prev, { id: `import-${Date.now()}`, name, source: "upload", parameters: importForm.parameters, precision: importForm.precision, deployed: false }]);
+    setImportForm({ path: "", name: "", parameters: "7B", precision: "BF16" });
+    setImportOpen(false);
+    notify("importByDirectory");
+  };
+
   const selected = selectedId ? modelById.get(selectedId) : null;
 
   return (
@@ -67,7 +92,10 @@ export function LocalModelPrototype() {
           <h1 className="text-xl font-semibold">{t("localRepo")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t("localModelList")}</p>
         </div>
-        <Button type="button" onClick={() => notify("uploadModel")}>{t("uploadModel")}</Button>
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" onClick={() => setImportOpen(true)}>{t("importByDirectory")}</Button>
+          <Button type="button" onClick={() => setUploadOpen(true)}>{t("uploadModel")}</Button>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto rounded-xl border bg-muted/10">
@@ -107,6 +135,62 @@ export function LocalModelPrototype() {
           </tbody>
         </table>
       </div>
+
+      <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+        <DialogContent className="sm:max-w-[460px]">
+          <DialogHeader>
+            <DialogTitle>{t("uploadModel")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1 block text-sm text-muted-foreground">{t("selectModel")}</label>
+              <select className="h-9 w-full rounded-md border bg-background px-3 text-sm" defaultValue="Qwen2.5-7B-Instruct">
+                <option>Qwen2.5-7B-Instruct</option>
+                <option>DeepSeek-R1-Distill-Qwen-7B</option>
+                <option>Llama-3-8B-Instruct</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-muted-foreground">{t("name")}</label>
+              <Input value={uploadName} onChange={(e) => setUploadName(e.target.value)} placeholder="Qwen2.5-7B-Instruct" />
+            </div>
+            <div className="flex justify-end">
+              <Button type="button" onClick={handleUploadModel}>{t("confirm")}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="sm:max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>{t("importByDirectory")}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1 block text-sm text-muted-foreground">{t("modelPath")}</label>
+              <Input value={importForm.path} onChange={(e) => setImportForm({ ...importForm, path: e.target.value })} placeholder="D:/models/Qwen2.5-7B-Instruct" />
+            </div>
+            <div>
+              <label className="mb-1 block text-sm text-muted-foreground">{t("name")}</label>
+              <Input value={importForm.name} onChange={(e) => setImportForm({ ...importForm, name: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="mb-1 block text-sm text-muted-foreground">{t("parameters")}</label>
+                <Input value={importForm.parameters} onChange={(e) => setImportForm({ ...importForm, parameters: e.target.value })} />
+              </div>
+              <div>
+                <label className="mb-1 block text-sm text-muted-foreground">{t("precision")}</label>
+                <Input value={importForm.precision} onChange={(e) => setImportForm({ ...importForm, precision: e.target.value })} />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button type="button" onClick={handleImportModel}>{t("confirm")}</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={Boolean(selected)} onOpenChange={(open) => !open && setSelectedId(null)}>
         <DialogContent className="sm:max-w-[760px]">

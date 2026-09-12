@@ -126,7 +126,9 @@
     "status": "状態",
     "actions": "操作",
     "evalLoss": "評価損失",
-    "bleu": "BLEUスコア"
+    "bleu": "BLEUスコア",
+    "importByDirectory": "ディレクトリインポート",
+    "modelPath": "モデルパス"
   },
   "finetune": {
     "rtServiceManagement": "FTサービス管理",
