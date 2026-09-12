@@ -7,6 +7,7 @@ import {
   updateDatasetRecordsApi,
 } from "@/controllers/API/finetune";
 import type { DatasetRecord } from "@/controllers/API/finetune";
+import { captureAndAlertRequestErrorHoc } from "@/controllers/request";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -48,10 +49,12 @@ export function DataSetDetail({ fileId, onClose }: DataSetDetailProps) {
   const handleSave = () => {
     if (!fileId) return;
     setSaving(true);
-    updateDatasetRecordsApi(fileId, records)
+    captureAndAlertRequestErrorHoc(updateDatasetRecordsApi(fileId, records))
       .then((res) => {
-        setRecords(res);
-        message({ variant: "success", description: t("dataset.saveChanges") });
+        if (res) {
+          setRecords(res);
+          message({ variant: "success", description: t("dataset.saveChanges") });
+        }
       })
       .finally(() => setSaving(false));
   };
@@ -59,8 +62,9 @@ export function DataSetDetail({ fileId, onClose }: DataSetDetailProps) {
   const handleClean = () => {
     if (!fileId) return;
     setCleaning(true);
-    cleanDatasetApi(fileId, options)
+    captureAndAlertRequestErrorHoc(cleanDatasetApi(fileId, options))
       .then((res) => {
+        if (!res) return;
         setRecords(res.records);
         toast({
           variant: "success",

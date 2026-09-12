@@ -288,7 +288,7 @@ export const getDatasetRecordsApi = async (fileId: string): Promise<DatasetRecor
 
 // 保存数据集记录
 export const updateDatasetRecordsApi = async (fileId: string, records: DatasetRecord[]): Promise<DatasetRecord[]> => {
-  return await axios.put(`/api/v1/finetune/job/file/preset/${fileId}/records`, { records }).then((res) => res.records);
+  return await axios.put(`/api/v1/finetune/job/file/preset/${fileId}/records`, records).then((res) => res.records);
 };
 
 // 清洗数据集
