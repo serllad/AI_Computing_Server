@@ -2621,9 +2621,6 @@
   "src/pages/DataSetPage/index.tsx": {
     "@typescript-eslint/no-unused-vars": {
       "count": 1
-    },
-    "react-hooks/rules-of-hooks": {
-      "count": 4
     }
   },
   "src/pages/DepartmentPage/components/AddMemberDialog.tsx": {

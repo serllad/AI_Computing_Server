@@ -161,6 +161,28 @@ async def get_preset_file(*,
     return resp_200(ret)
 
 
+@router.get('/job/file/preset/{file_id}/records')
+async def get_preset_file_records(*, file_id: str,
+                                  login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
+    ret = await FinetuneFileService.get_file_records(file_id)
+    return resp_200(data={'records': ret})
+
+
+@router.put('/job/file/preset/{file_id}/records')
+async def update_preset_file_records(*, file_id: str,
+                                     records: list[dict] = Body(...),
+                                     login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
+    ret = await FinetuneFileService.save_file_records(file_id, records)
+    return resp_200(data={'records': ret})
+
+
+@router.post('/job/file/preset/{file_id}/clean')
+async def clean_preset_file_records(*, file_id: str,
+                                    options: dict = Body(default={}),
+                                    login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
+    ret = await FinetuneFileService.clean_file_records(file_id, options)
+    return resp_200(data=ret)
+
 @router.delete('/job/file/preset')
 async def delete_preset_file(*, file_id: str, login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
     # get login user

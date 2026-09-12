@@ -1,4 +1,6 @@
+import json
 import os.path
+import re
 from typing import List
 
 from fastapi import UploadFile
@@ -85,6 +87,44 @@ class FinetuneFileService(BaseModel):
         return PageList(list=list_res, total=total_count)
 
     @classmethod
+    async def get_file_records(cls, file_id: str) -> list[dict]:
+        file_data = await PresetTrainDao.find_one(file_id)
+        if not file_data:
+            raise TrainFileNotExistError()
+        minio_client = await get_minio_storage()
+        raw = await minio_client.get_object(object_name=file_data.url)
+        if not raw:
+            return []
+        parsed = json.loads(raw.decode('utf-8'))
+        return parsed if isinstance(parsed, list) else []
+
+    @classmethod
+    async def save_file_records(cls, file_id: str, records: list[dict]) -> list[dict]:
+        file_data = await PresetTrainDao.find_one(file_id)
+        if not file_data:
+            raise TrainFileNotExistError()
+        payload = json.dumps(records, ensure_ascii=False, indent=2).encode('utf-8')
+        minio_client = await get_minio_storage()
+        await minio_client.put_object(
+            bucket_name=minio_client.bucket,
+            object_name=file_data.url,
+            file=payload,
+            content_type='application/json',
+        )
+        return records
+
+    @classmethod
+    async def clean_file_records(cls, file_id: str, options: dict) -> dict:
+        records = await cls.get_file_records(file_id)
+        cleaned = [_clean_record(record, options) for record in records]
+        await cls.save_file_records(file_id, cleaned)
+        return {
+            'records': cleaned,
+            'cleaned_count': len(cleaned),
+            'llm_used': False,
+        }
+
+    @classmethod
     async def delete_preset_file(cls, file_id: str, user: UserPayload) -> None:
         file_data = await PresetTrainDao.find_one(file_id)
         if not file_data:
@@ -94,3 +134,40 @@ class FinetuneFileService(BaseModel):
         await PresetTrainDao.delete_one(file_data)
         logger.info('delete preset train file success')
         return None
+
+TYPO_FIXES = {
+    "teh": "the",
+    "recieve": "receive",
+    "adress": "address",
+    "seperate": "separate",
+    "occured": "occurred",
+    "writting": "writing",
+}
+
+def _normalize_text(value: str) -> str:
+    value = value.strip()
+    value = re.sub(r"[ \t]+", " ", value)
+    return value
+
+def _apply_typo_fixes(value: str) -> str:
+    for wrong, right in TYPO_FIXES.items():
+        value = re.sub(re.escape(wrong), right, value, flags=re.IGNORECASE)
+    return value
+
+def _clean_record(record: dict, options: dict) -> dict:
+    if not isinstance(record, dict):
+        return record
+    cleaned = dict(record)
+    if options.get('format_validation'):
+        cleaned['instruction'] = str(cleaned.get('instruction') or '').strip()
+        cleaned['input'] = str(cleaned.get('input') or '').strip()
+        cleaned['output'] = str(cleaned.get('output') or '').strip()
+    if options.get('typo_correction'):
+        for field in ('instruction', 'input', 'output'):
+            if isinstance(cleaned.get(field), str):
+                cleaned[field] = _apply_typo_fixes(cleaned[field])
+    if options.get('qa_optimization'):
+        for field in ('instruction', 'input', 'output'):
+            if isinstance(cleaned.get(field), str):
+                cleaned[field] = _normalize_text(cleaned[field])
+    return cleaned

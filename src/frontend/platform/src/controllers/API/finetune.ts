@@ -273,3 +273,28 @@ export const createDatasetApi = async (data: { name: string, files: string, qa_l
 export const deleteDatasetApi = async (id) => {
     return await axios.delete(`/api/v1/finetune/job/file/preset?file_id=${id}`);
 }
+
+export interface DatasetRecord {
+  instruction: string;
+  input?: string;
+  output: string;
+  [key: string]: unknown;
+}
+
+// 获取数据集记录
+export const getDatasetRecordsApi = async (fileId: string): Promise<DatasetRecord[]> => {
+  return await axios.get(`/api/v1/finetune/job/file/preset/${fileId}/records`).then((res) => res.records);
+};
+
+// 保存数据集记录
+export const updateDatasetRecordsApi = async (fileId: string, records: DatasetRecord[]): Promise<DatasetRecord[]> => {
+  return await axios.put(`/api/v1/finetune/job/file/preset/${fileId}/records`, { records }).then((res) => res.records);
+};
+
+// 清洗数据集
+export const cleanDatasetApi = async (
+  fileId: string,
+  options: { format_validation: boolean; typo_correction: boolean; qa_optimization: boolean; use_llm: boolean },
+): Promise<{ records: DatasetRecord[]; cleaned_count: number; llm_used: boolean }> => {
+  return await axios.post(`/api/v1/finetune/job/file/preset/${fileId}/clean`, options);
+};
