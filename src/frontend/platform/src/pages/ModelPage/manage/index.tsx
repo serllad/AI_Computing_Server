@@ -21,6 +21,7 @@ import ModelConfig from "./ModelConfig"
 import { canManageModelSettings } from "./permissions"
 import { ScopeBar } from "./ScopeBar"
 import SystemModelConfig from "./SystemModelConfig"
+import { LocalModelPrototype } from "./LocalModelPrototype"
 
 function CustomTableRow({ data, index, user, onModel, onCheck, onVerified }) {
     const { t } = useTranslation()

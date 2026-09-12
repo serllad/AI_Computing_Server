@@ -606,7 +606,7 @@
     "voiceTypeTooltip": "选择语音合成的声音类型",
     "webSearch": "网络搜索",
     "visitOfficialWebsiteToViewAvailableModels": "前往官网查看可用模型",
-    "modelManagement": "模型管理",
+    "modelManagement": "模型供应商",
     "modelFineTune": "模型微调",
     "modelConfiguration": "模型配置",
     "modelCollectionCaption": "模型集合",
@@ -627,7 +627,8 @@
     "unknown": "未知",
     "empty": "暂无数据",
     "gpuResourceUsageTitle": "GPU资源使用情况",
-    "jsonFormatError": "JSON格式有误"
+    "jsonFormatError": "JSON格式有误",
+    "localRepo": "本地模型仓库"
   },
   "finetune": {
     "all": "全部",

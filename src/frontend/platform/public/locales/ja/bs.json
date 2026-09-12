@@ -601,7 +601,7 @@
     "voiceTypeTooltip": "音声合成で使用する音声タイプを選択してください",
     "webSearch": "Web 検索",
     "visitOfficialWebsiteToViewAvailableModels": "公式サイトで利用可能なモデルを確認してください",
-    "modelManagement": "モデル管理",
+    "modelManagement": "モデルプロバイダー",
     "modelFineTune": "モデル微調整",
     "modelConfiguration": "モデル設定",
     "modelCollectionCaption": "モデルコレクション",
@@ -622,7 +622,8 @@
     "unknown": "不明",
     "empty": "データがありません",
     "gpuResourceUsageTitle": "GPU リソース使用状況",
-    "jsonFormatError": "JSON フォーマットエラー"
+    "jsonFormatError": "JSON フォーマットエラー",
+    "localRepo": "ローカルモデルリポジトリ"
   },
   "finetune": {
     "all": "すべて",

@@ -762,7 +762,7 @@
     "voiceTypeTooltip": "Select the voice type for text-to-speech synthesis",
     "webSearch": "Web Search",
     "visitOfficialWebsiteToViewAvailableModels": "Visit the official website to view available models",
-    "modelManagement": "Model Management",
+    "modelManagement": "Model Provider",
     "modelFineTune": "Model Finetune",
     "modelConfiguration": "Model Configuration",
     "modelCollectionCaption": "Model Collection",
@@ -783,7 +783,8 @@
     "unknown": "Unknown",
     "empty": "No Data",
     "gpuResourceUsageTitle": "GPU Resource Usage",
-    "jsonFormatError": "JSON Format Error"
+    "jsonFormatError": "JSON Format Error",
+    "localRepo": "Local Model Repository"
   },
   "finetune": {
     "all": "All",
