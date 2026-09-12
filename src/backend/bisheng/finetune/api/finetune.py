@@ -180,7 +180,7 @@ async def update_preset_file_records(*, file_id: str,
 async def clean_preset_file_records(*, file_id: str,
                                     options: dict = Body(default={}),
                                     login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
-    ret = await FinetuneFileService.clean_file_records(file_id, options)
+    ret = await FinetuneFileService.clean_file_records(file_id, options, login_user.user_id)
     return resp_200(data=ret)
 
 @router.delete('/job/file/preset')
