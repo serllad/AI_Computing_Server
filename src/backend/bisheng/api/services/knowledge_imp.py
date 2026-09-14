@@ -189,8 +189,26 @@ def addEmbedding(
 
     knowledge_info = KnowledgeDao.query_by_id(knowledge_id)
     logger.info("start init Milvus")
+
+    # Allow a per-upload embedding model override stored in the file split rule.
+    # Falls back to the knowledge base default model when not specified.
+    embeddings = None
+    try:
+        split_rule = json.loads(knowledge_files[0].split_rule) if knowledge_files[0].split_rule else {}
+        embedding_model_id = split_rule.get("embedding_model_id")
+        if embedding_model_id:
+            embeddings = LLMService.get_bisheng_knowledge_embedding_sync(
+                invoke_user_id=knowledge_files[0].updater_id,
+                model_id=int(embedding_model_id),
+            )
+    except Exception:
+        logger.exception("resolve_upload_embedding_model_failed")
+
     vector_client = KnowledgeRag.init_knowledge_milvus_vectorstore_sync(
-        knowledge_files[0].updater_id, knowledge=knowledge_info, metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA
+        knowledge_files[0].updater_id,
+        knowledge=knowledge_info,
+        metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA,
+        embeddings=embeddings,
     )
     vector_client = KnowledgeUtils.ensure_milvus_schema_ready(
         invoke_user_id=knowledge_files[0].updater_id,

@@ -7,7 +7,7 @@ import { locationContext } from "@/contexts/locationContext";
 import MessageMarkDown from "@/pages/BuildPage/flow/FlowChat/MessageMarkDown";
 import { cn } from "@/util/utils";
 import { debounce } from "lodash-es";
-import { CircleX, FileCode, LocateFixed } from "lucide-react";
+import { CircleX, FileCode, LocateFixed, Plus, Sparkles, X } from "lucide-react";
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import AceEditor from "react-ace";
 import Vditor from 'vditor';
@@ -16,6 +16,8 @@ import useKnowledgeStore from "../useKnowledgeStore";
 // 新增：引入国际化hooks
 import { useTranslation } from "react-i18next";
 import { useMiniDebounce } from "@/util/hook";
+import { autoTagKnowledgeChunkApi, getKnowledgeChunkTagsApi, updateKnowledgeChunkTagsApi } from "@/controllers/API";
+import { captureAndAlertRequestErrorHoc } from "@/controllers/request";
 
 export const MarkdownView = ({ noHead = false, data }) => {
     // 新增：使用knowledge命名空间的国际化
@@ -46,7 +48,7 @@ const AceEditorCom = ({ markdown, hidden, onChange, onBlur }) => {
         enableLiveAutocompletion
         name="CodeEditor"
         onChange={onChange}
-        onBlur={(e) => onBlur(markdown, () => {
+        onBlur={() => onBlur(markdown, () => {
             // 为空时恢复上一次数据
         })}
         onValidate={(e) => console.error('ace validate :>> ', e)}
@@ -153,7 +155,7 @@ const VditorEditor = forwardRef(({ defalutValue, hidden, onBlur, onChange }, ref
     return <div ref={domRef} className={`${hidden ? 'hidden' : ''} overflow-y-auto border-none file-vditor`}></div>;
 });
 
-const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDelete = false, onClick, onDel, onChange, onPositionClick }) => {
+const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDelete = false, onClick, onDel, onChange, onPositionClick, tags = [], tagLoading = false, onSaveTags, onAutoTag }) => {
     const { t } = useTranslation('knowledge');
 
     const [showSourceEdit, setShowSourceEdit] = useState(false); // 编辑原始格式
@@ -199,6 +201,30 @@ const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDele
         onChange(data.chunkIndex, newValue)
     }
     const handleBlurDebounced = useMiniDebounce(handleBlur, 300)
+
+    // Chunk tag editing state
+    const [showTagInput, setShowTagInput] = useState(false)
+    const [newTag, setNewTag] = useState('')
+
+    const handleAddTag = () => {
+        const name = newTag.trim()
+        if (!name) {
+            setShowTagInput(false)
+            return
+        }
+        onSaveTags?.(data.chunkIndex, Array.from(new Set([...tags, name])))
+        setNewTag('')
+        setShowTagInput(false)
+    }
+
+    const handleRemoveTag = (name) => {
+        onSaveTags?.(data.chunkIndex, tags.filter((tag) => tag !== name))
+    }
+
+    const handleAutoTagClick = async (e) => {
+        e.stopPropagation()
+        await onAutoTag?.(data.chunkIndex, data.text)
+    }
 
     return <div
         className={cn("group p-4 py-3 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-primary transition-shadow w-full",
@@ -256,11 +282,67 @@ const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDele
         )}
         {/* 普通Markdown编辑器 */}
         {edit && <AceEditorCom hidden={!showSourceEdit} markdown={value} onChange={setDebounceValue} onBlur={handleBlurDebounced} />}
+
+        {/* 切片标签 */}
+        {(tags.length > 0 || edit) && (
+            <div className="mt-2 flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                {tags.map((tag) => (
+                    <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs leading-5 text-primary">
+                        {tag}
+                        {edit && (
+                            <button
+                                type="button"
+                                className="opacity-60 hover:opacity-100"
+                                onClick={() => handleRemoveTag(tag)}
+                            >
+                                <X size={12} />
+                            </button>
+                        )}
+                    </span>
+                ))}
+                {edit && showTagInput ? (
+                    <input
+                        autoFocus
+                        value={newTag}
+                        onChange={(e) => setNewTag(e.target.value)}
+                        onBlur={handleAddTag}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault()
+                                handleAddTag()
+                            }
+                        }}
+                        placeholder={t('addTag')}
+                        className="h-6 w-28 rounded-md border border-border bg-white px-2 text-xs outline-none focus:border-primary"
+                    />
+                ) : edit ? (
+                    <button
+                        type="button"
+                        className="inline-flex items-center gap-0.5 rounded-full border border-dashed border-primary/50 px-2 py-0.5 text-xs leading-5 text-primary hover:bg-primary/5"
+                        onClick={() => setShowTagInput(true)}
+                    >
+                        <Plus size={12} />
+                        {t('addTag')}
+                    </button>
+                ) : null}
+                {edit && (
+                    <button
+                        type="button"
+                        disabled={tagLoading}
+                        className="inline-flex items-center gap-1 rounded-full border border-primary/30 px-2 py-0.5 text-xs leading-5 text-primary hover:bg-primary/5 disabled:opacity-50"
+                        onClick={handleAutoTagClick}
+                    >
+                        <Sparkles size={12} />
+                        {tagLoading ? t('autoTagging') : t('autoTag')}
+                    </button>
+                )}
+            </div>
+        )}
     </div>
 }
 
 // 分段结果列表
-export default function PreviewParagraph({ fileId, page = 1, previewCount, edit, canDelete = false, fileSuffix, loading, chunks, className, onDel, onChange }) {
+export default function PreviewParagraph({ knowledgeId, fileId, page = 1, previewCount, edit, canDelete = false, fileSuffix, loading, chunks, className, onDel, onChange }) {
     const { t } = useTranslation('knowledge');
 
     const containerRef = useRef(null);
@@ -268,6 +350,64 @@ export default function PreviewParagraph({ fileId, page = 1, previewCount, edit,
     const loadingRef = useRef(false);
     // 选中的分段
     const [selectedChunkIndex, setSelectedChunkIndex, setSelectedChunkDistanceFactor] = useKnowledgeStore((state) => [state.selectedChunkIndex, state.setSelectedChunkIndex, state.setSelectedChunkDistanceFactor]);
+
+    // Chunk tag state
+    const [tagsByChunk, setTagsByChunk] = useState<Record<number, string[]>>({})
+    const [tagLoadingChunk, setTagLoadingChunk] = useState<number | null>(null)
+
+    const loadChunkTags = useCallback(async () => {
+        if (!knowledgeId || !fileId || !chunks.length) return
+        const chunkIndexes = chunks.map((chunk) => chunk.chunkIndex)
+        try {
+            const res = await captureAndAlertRequestErrorHoc(getKnowledgeChunkTagsApi({
+                knowledge_id: Number(knowledgeId),
+                file_id: Number(fileId),
+                chunk_indexes: chunkIndexes
+            }))
+            setTagsByChunk(res || {})
+        } catch {
+            // Tag fetch failures are non-blocking for chunk preview
+        }
+    }, [knowledgeId, fileId, chunks])
+
+    useEffect(() => {
+        loadChunkTags()
+    }, [loadChunkTags])
+
+    const handleSaveTags = useCallback(async (chunkIndex, tags) => {
+        if (!edit) return
+        try {
+            await captureAndAlertRequestErrorHoc(updateKnowledgeChunkTagsApi({
+                knowledge_id: Number(knowledgeId),
+                file_id: Number(fileId),
+                chunk_index: chunkIndex,
+                tag_names: tags
+            }))
+            setTagsByChunk((prev) => ({ ...prev, [chunkIndex]: tags }))
+        } catch {
+            // Error toast is handled by captureAndAlertRequestErrorHoc
+        }
+    }, [edit, knowledgeId, fileId])
+
+    const handleAutoTag = useCallback(async (chunkIndex, text) => {
+        if (!edit) return null
+        setTagLoadingChunk(chunkIndex)
+        try {
+            const res = await captureAndAlertRequestErrorHoc(autoTagKnowledgeChunkApi({
+                knowledge_id: Number(knowledgeId),
+                file_id: Number(fileId),
+                chunk_index: chunkIndex,
+                text
+            }))
+            const tags = res?.tags || []
+            setTagsByChunk((prev) => ({ ...prev, [chunkIndex]: tags }))
+            return tags
+        } catch {
+            return null
+        } finally {
+            setTagLoadingChunk(null)
+        }
+    }, [edit, knowledgeId, fileId])
     useEffect(() => {
         const fun = () => setSelectedChunkIndex(-1) // 失焦
         document.addEventListener('click', fun)
@@ -331,6 +471,10 @@ export default function PreviewParagraph({ fileId, page = 1, previewCount, edit,
                             oneLeft={chunks.length === 1}
                             onDel={onDel}
                             onChange={onChange}
+                            tags={tagsByChunk[chunk.chunkIndex] || []}
+                            tagLoading={tagLoadingChunk === chunk.chunkIndex}
+                            onSaveTags={handleSaveTags}
+                            onAutoTag={handleAutoTag}
                         />
                         : <MarkdownView key={fileId + previewCount + chunk.chunkIndex} data={chunk} />
                 ))}

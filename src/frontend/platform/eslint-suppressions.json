@@ -2916,9 +2916,6 @@
     }
   },
   "src/pages/KnowledgePage/components/PreviewParagraph.tsx": {
-    "@typescript-eslint/no-unused-vars": {
-      "count": 1
-    },
     "no-console": {
       "count": 1
     },

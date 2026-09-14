@@ -896,6 +896,7 @@ export default function Paragraphs({ fileId, onBack, canEditKb = false, canDelet
                         <div className="flex justify-center items-center relative text-sm gap-2 p-2 pt-0 ">
                             <PreviewParagraph
                                 key={`preview-${selectedFileId}-${chunkSwitchTrigger}`}
+                                knowledgeId={id}
                                 fileId={selectedFileId}
                                 previewCount={datalist.length}
                                 edit={canEditKb}

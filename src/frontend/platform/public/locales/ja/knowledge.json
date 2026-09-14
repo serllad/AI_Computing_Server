@@ -384,6 +384,7 @@
     "manual": "手動作成"
   },
   "knowledgeDesc": "ナレッジベース説明",
+  "useDefaultEmbedding": "ナレッジベースのデフォルトモデルを使用",
   "embeddingModel": "ナレッジベースEmbeddingモデル選択",
   "loadingModelList": "モデルリストを読み込み中...",
   "noAvailableModel": "利用可能なモデルはありません",
@@ -405,6 +406,8 @@
   "fileExists": "{{name1}} はすでに {{name2}}として存在しています",
   "tags": "タグ",
   "addTag": "タグ追加",
+  "autoTag": "自動タグ",
+  "autoTagging": "タグ生成中...",
   "editTag": "タグ編集",
   "createTag": "タグを作成",
   "deleteTag": "タグ削除",
