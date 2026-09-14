@@ -67,18 +67,32 @@ BISHENG毕昇 是一款 <b>开源</b> LLM应用开发平台，主攻<b>企业场
 下载BISHENG代码
 ```bash
 # 如果系统中有git命令，可以直接下载毕昇代码
-git clone https://github.com/dataelement/bisheng.git
+git clone https://github.com/serllad/AI_Computing_Server.git
 # 进入安装目录
-cd bisheng/docker
+cd AI_Computing_Server
 
 # 如果系统没有没有git命令，可以下载毕昇代码zip包
-wget https://github.com/dataelement/bisheng/archive/refs/heads/main.zip
+wget https://github.com/serllad/AI_Computing_Server/archive/refs/heads/main.zip
 # 解压并进入安装目录
-unzip main.zip && cd bisheng-main/docker
+unzip main.zip && cd AI_Computing_Server-main
 ```
 启动BISHENG
+因为代码已经修改，启动前需要先在本地重新编译镜像：
+
 ```bash
-# 进入bisheng/docker或bisheng-main/docker目录，执行
+# 进入仓库根目录
+cd AI_Computing_Server
+
+# 1. 构建后端镜像
+cd src/backend
+docker build -t dataelement/bisheng-backend:v3.0.0-beta1 .
+
+# 2. 构建前端镜像
+cd ../frontend
+docker build -t dataelement/bisheng-frontend:v3.0.0-beta1 .
+
+# 3. 启动全套服务
+cd ../docker
 docker compose -f docker-compose.yml -p bisheng up -d
 ```
 启动后，在浏览器中访问 http://IP:3001 ，出现登录页，进行用户注册。默认第一个注册的用户会成为系统admin。

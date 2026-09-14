@@ -66,17 +66,32 @@ Please ensure the following conditions are met before installing BISHENG:
 
 Download BISHENG
 ```bash
-git clone https://github.com/dataelement/bisheng.git
+git clone https://github.com/serllad/AI_Computing_Server.git
 # Enter the installation directory
-cd bisheng/docker
+cd AI_Computing_Server
 
 # If the system does not have the git command, you can download the BISHENG code as a zip file.
-wget https://github.com/dataelement/bisheng/archive/refs/heads/main.zip
+wget https://github.com/serllad/AI_Computing_Server/archive/refs/heads/main.zip
 # Unzip and enter the installation directory
-unzip main.zip && cd bisheng-main/docker
+unzip main.zip && cd AI_Computing_Server-main
 ```
 Start BISHENG
+Because the source code has changed, rebuild the local images before starting:
+
 ```bash
+# Enter the repository root first
+cd AI_Computing_Server
+
+# 1. Build backend image
+cd src/backend
+docker build -t dataelement/bisheng-backend:v3.0.0-beta1 .
+
+# 2. Build frontend image
+cd ../frontend
+docker build -t dataelement/bisheng-frontend:v3.0.0-beta1 .
+
+# 3. Start the full stack
+cd ../docker
 docker compose -f docker-compose.yml -p bisheng up -d
 ```
 After the startup is complete, access http://IP:3001 in the browser. The login page will appear, proceed with user registration. 
