@@ -11,8 +11,8 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import useKnowledgeStore from "../useKnowledgeStore";
 import PreviewResult from "./PreviewResult";
-import { useModel } from "../ModelPage/manage";
-import { ModelSelect } from "../ModelPage/manage/tabs/WorkbenchModel";
+import { useModel } from "../../ModelPage/manage";
+import { ModelSelect } from "../../ModelPage/manage/tabs/WorkbenchModel";
 import RuleFile from "./RuleFile";
 import RuleTable from "./RuleTable";
 
