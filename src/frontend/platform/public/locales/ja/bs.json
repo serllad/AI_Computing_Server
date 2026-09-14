@@ -623,7 +623,7 @@
     "empty": "データがありません",
     "gpuResourceUsageTitle": "GPU リソース使用状況",
     "jsonFormatError": "JSON フォーマットエラー",
-    "localRepo": "ローカルモデルリポジトリ"
+    "localRepo": "本地模型仓库"
   },
   "finetune": {
     "all": "すべて",

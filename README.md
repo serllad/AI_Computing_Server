@@ -85,6 +85,47 @@ By default, the first registered user will become the system admin.
 
 For more installation and deployment issues, refer to:：[Self-hosting](https://dataelem.feishu.cn/wiki/BSCcwKd4Yiot3IkOEC8cxGW7nPc)
 
+
+## Build local images and start services
+
+When you modify the source code and want to rebuild the containers locally:
+
+```bash
+# Backend image
+cd src/backend
+docker build -t dataelement/bisheng-backend:v3.0.0-beta1 .
+
+# Frontend image
+cd ../frontend
+docker build -t dataelement/bisheng-frontend:v3.0.0-beta1 .
+
+# Start the full stack
+cd ../docker
+docker compose -f docker-compose.yml -p bisheng up -d
+```
+
+If docker.io is unreachable, build incrementally against the existing images:
+
+```bash
+# Backend: copy local source over the existing backend image
+cd src/backend
+cat > Dockerfile.local <<'EOF'
+FROM dataelement/bisheng-backend:v3.0.0-beta1
+WORKDIR /app
+COPY ./bisheng /app/bisheng
+EOF
+docker build -f Dockerfile.local -t dataelement/bisheng-backend:v3.0.0-beta1 .
+
+# Frontend: build platform assets, then copy them over the existing frontend image
+cd ../frontend
+pnpm dlx pnpm@9.15.9 --filter bisheng build
+cat > Dockerfile.local <<'EOF'
+FROM dataelement/bisheng-frontend:v3.0.0-beta1
+COPY ./platform/build /usr/share/nginx/html/platform
+EOF
+docker build -f Dockerfile.local -t dataelement/bisheng-frontend:v3.0.0-beta1 .
+```
+
 ## Acknowledgement 
 This repo benefits from [langchain](https://github.com/langchain-ai/langchain) [langflow](https://github.com/logspace-ai/langflow) [unstructured](https://github.com/Unstructured-IO/unstructured) and [LLaMA-Factory](https://github.com/hiyouga/LLaMA-Factory) . Thanks for their wonderful works.
 

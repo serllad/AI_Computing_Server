@@ -86,6 +86,47 @@ docker compose -f docker-compose.yml -p bisheng up -d
 其他安装部署问题参考：[私有化部署](https://dataelem.feishu.cn/wiki/BSCcwKd4Yiot3IkOEC8cxGW7nPc)
 
 
+
+## 本地编译镜像并启动服务
+
+修改源码后，如需在本地重新构建容器镜像：
+
+```bash
+# 后端镜像
+cd src/backend
+docker build -t dataelement/bisheng-backend:v3.0.0-beta1 .
+
+# 前端镜像
+cd ../frontend
+docker build -t dataelement/bisheng-frontend:v3.0.0-beta1 .
+
+# 启动全套服务
+cd ../docker
+docker compose -f docker-compose.yml -p bisheng up -d
+```
+
+如果 docker.io 无法访问，可在已有镜像基础上增量构建：
+
+```bash
+# 后端：把本地源码覆盖进已有后端镜像
+cd src/backend
+cat > Dockerfile.local <<'EOF'
+FROM dataelement/bisheng-backend:v3.0.0-beta1
+WORKDIR /app
+COPY ./bisheng /app/bisheng
+EOF
+docker build -f Dockerfile.local -t dataelement/bisheng-backend:v3.0.0-beta1 .
+
+# 前端：本地构建 platform 后覆盖进已有前端镜像
+cd ../frontend
+pnpm dlx pnpm@9.15.9 --filter bisheng build
+cat > Dockerfile.local <<'EOF'
+FROM dataelement/bisheng-frontend:v3.0.0-beta1
+COPY ./platform/build /usr/share/nginx/html/platform
+EOF
+docker build -f Dockerfile.local -t dataelement/bisheng-frontend:v3.0.0-beta1 .
+```
+
 ## 资源
 - [📄应用案例/场景库](https://dataelem.feishu.cn/wiki/ZfkmwLPfeiAhQSkK2WvcX87unxc)
 - [📄经验技巧](https://dataelem.feishu.cn/wiki/OWFRwknFaiIMajke4m5cFeLrnie)

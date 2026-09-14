@@ -784,7 +784,7 @@
     "empty": "No Data",
     "gpuResourceUsageTitle": "GPU Resource Usage",
     "jsonFormatError": "JSON Format Error",
-    "localRepo": "Local Model Repository"
+    "localRepo": "本地模型仓库"
   },
   "finetune": {
     "all": "All",
