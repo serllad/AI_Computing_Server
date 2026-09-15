@@ -111,39 +111,39 @@ function KpiRow() {
 
 function LeftColumn() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-h-0 flex-col gap-3">
       <Overview />
       <VendorMix />
+      <Trend />
     </div>
   );
 }
 
 function CenterColumn() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-h-0 flex-col gap-3">
       <Topology />
-      <Trend />
+      <Logs />
     </div>
   );
 }
 
 function RightColumn() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex min-h-0 flex-col gap-3">
       <Alerts />
       <Tasks />
-      <Logs />
     </div>
   );
 }
 
 export function SystemMonitor() {
   return (
-    <div className="h-full w-full overflow-auto bg-[#f5f6f8] text-gray-800">
-      <div className="flex min-h-full min-w-[1160px] flex-col gap-3 p-4">
+    <div className="h-full w-full overflow-hidden bg-[#f5f6f8] text-gray-800">
+      <div className="flex h-full min-w-[1160px] flex-col gap-3 p-4">
         <Header />
         <KpiRow />
-        <div className="grid flex-1 grid-cols-[1.05fr_1.25fr_1fr] gap-3">
+        <div className="grid min-h-0 flex-1 grid-cols-[1.05fr_1.25fr_1fr] gap-3">
           <LeftColumn />
           <CenterColumn />
           <RightColumn />

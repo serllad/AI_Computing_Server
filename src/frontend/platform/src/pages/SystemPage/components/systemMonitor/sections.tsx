@@ -49,7 +49,7 @@ export function Overview() {
 
   return (
     <Panel
-      className="min-h-[200px]"
+      className="min-h-0 flex-1"
       title={t("monitor.overviewTitle")}
       sub={t("monitor.overviewSub")}
       extra={t("monitor.sample", { time: "09:41:10" })}
@@ -84,7 +84,7 @@ export function VendorMix() {
 
   return (
     <Panel
-      className="min-h-[178px]"
+      className="min-h-0 flex-1"
       title={t("monitor.vendorMixTitle")}
       sub={t("monitor.vendorMixSub")}
       extra={t("monitor.totalCards")}
@@ -179,7 +179,7 @@ export function Topology() {
 
   return (
     <Panel
-      className="min-h-[250px]"
+      className="min-h-0 flex-1"
       title={t("monitor.topologyTitle")}
       sub={t("monitor.topologySub")}
       extra={
@@ -207,7 +207,7 @@ export function Trend() {
 
   return (
     <Panel
-      className="min-h-[236px]"
+      className="min-h-0 flex-[1.3]"
       title={t("monitor.trendTitle")}
       sub={t("monitor.trendSub")}
       extra={t("monitor.trendRange")}
@@ -263,7 +263,7 @@ export function Alerts() {
 
   return (
     <Panel
-      className="min-h-[176px]"
+      className="min-h-0 flex-1"
       title={t("monitor.alertsTitle")}
       sub={t("monitor.alertsSub")}
       extra={
@@ -303,7 +303,7 @@ export function Tasks() {
 
   return (
     <Panel
-      className="min-h-[208px]"
+      className="min-h-0 flex-1"
       title={t("monitor.tasksTitle")}
       sub={t("monitor.tasksSub")}
       extra={<span className="text-amber-600">{t("monitor.fairShare")}</span>}
@@ -339,7 +339,7 @@ export function Logs() {
 
   return (
     <Panel
-      className="min-h-[166px]"
+      className="min-h-0 flex-1"
       title={t("monitor.logsTitle")}
       sub={t("monitor.logsSub")}
       extra={t("monitor.realtime")}
