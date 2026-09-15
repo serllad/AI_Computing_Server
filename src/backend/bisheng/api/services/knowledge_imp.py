@@ -41,6 +41,9 @@ from bisheng.knowledge.domain.models.knowledge_file import (
     QAStatus,
 )
 from bisheng.knowledge.domain.schemas.knowledge_rag_schema import QAKnowledgeMetadata
+from bisheng.knowledge.domain.services.knowledge_chunk_auto_tag_service import (
+    KnowledgeChunkAutoTagService,
+)
 from bisheng.knowledge.domain.services.knowledge_space_auto_tag_service import KnowledgeSpaceAutoTagService
 from bisheng.knowledge.domain.services.knowledge_utils import KnowledgeUtils
 from bisheng.knowledge.rag.knowledge_file_pipeline import KnowledgeFilePipeline
@@ -189,8 +192,26 @@ def addEmbedding(
 
     knowledge_info = KnowledgeDao.query_by_id(knowledge_id)
     logger.info("start init Milvus")
+
+    # Allow a per-upload embedding model override stored in the file split rule.
+    # Falls back to the knowledge base default model when not specified.
+    embeddings = None
+    try:
+        split_rule = json.loads(knowledge_files[0].split_rule) if knowledge_files[0].split_rule else {}
+        embedding_model_id = split_rule.get("embedding_model_id")
+        if embedding_model_id:
+            embeddings = LLMService.get_bisheng_knowledge_embedding_sync(
+                invoke_user_id=knowledge_files[0].updater_id,
+                model_id=int(embedding_model_id),
+            )
+    except Exception:
+        logger.exception("resolve_upload_embedding_model_failed")
+
     vector_client = KnowledgeRag.init_knowledge_milvus_vectorstore_sync(
-        knowledge_files[0].updater_id, knowledge=knowledge_info, metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA
+        knowledge_files[0].updater_id,
+        knowledge=knowledge_info,
+        metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA,
+        embeddings=embeddings,
     )
     vector_client = KnowledgeUtils.ensure_milvus_schema_ready(
         invoke_user_id=knowledge_files[0].updater_id,
@@ -219,6 +240,14 @@ def addEmbedding(
             )
             pipeline_result = knowledge_file_pipeline.run()
             db_file.status = KnowledgeFileStatus.SUCCESS.value
+
+            # Auto-generate tags for every chunk after parsing completes.
+            KnowledgeChunkAutoTagService.apply_after_ingest(
+                knowledge=knowledge_info,
+                db_file=db_file,
+                documents=pipeline_result.documents,
+            )
+
 
             # TODO[plan-3-async]: trigger SimHash similar-scan after successful parse.
             # addEmbedding runs in a sync Celery worker; async scan is deferred to a

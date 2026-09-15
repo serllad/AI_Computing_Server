@@ -27,6 +27,7 @@ from bisheng.api.v1.schemas import (
     KnowledgeFileReProcess,
     UpdatePreviewFileChunk,
 )
+from bisheng.common.constants.enums.telemetry import ApplicationTypeEnum
 from bisheng.common.constants.vectorstore_metadata import KNOWLEDGE_RAG_METADATA_SCHEMA
 from bisheng.common.cursor import CursorDecodeError, decode_cursor, encode_cursor
 from bisheng.common.dependencies.user_deps import UserPayload
@@ -75,6 +76,10 @@ from bisheng.knowledge.domain.repositories.interfaces.knowledge_repository impor
 from bisheng.knowledge.domain.schemas.knowledge_schema import (
     AddKnowledgeMetadataFieldsReq,
     UpdateKnowledgeMetadataFieldsReq,
+)
+from bisheng.knowledge.domain.services.knowledge_chunk_auto_tag_service import (
+    KnowledgeChunkAutoTagService,
+    generate_chunk_auto_tags,
 )
 from bisheng.knowledge.domain.services.knowledge_audit_telemetry_service import KnowledgeAuditTelemetryService
 from bisheng.knowledge.domain.services.knowledge_metadata_service import KnowledgeMetadataService
@@ -2815,3 +2820,182 @@ class KnowledgeService(KnowledgeUtils):
         valid_file_ids = [str(f.id) for f in files if f.knowledge_id == knowledge_id]
 
         return valid_file_ids
+
+
+    # ──────────────────────────── Chunk Tags ──────────────────────────────
+    @staticmethod
+    def _chunk_resource_id(file_id: int, chunk_index: int) -> str:
+        """Composite resource id identifying a single knowledge chunk."""
+        return f"{file_id}:{chunk_index}"
+
+    @classmethod
+    async def _resolve_or_create_chunk_tag_ids(
+        cls, knowledge_id: int, tag_names: list[str], login_user: UserPayload
+    ) -> list[int]:
+        """Return tag ids for ``tag_names``, creating missing knowledge tags on demand."""
+        names = list(dict.fromkeys(name.strip() for name in tag_names if name and name.strip()))
+        if not names:
+            return []
+
+        existing = await TagDao.get_tags_by_business(
+            business_type=TagBusinessTypeEnum.KNOWLEDGE,
+            business_id=str(knowledge_id),
+        )
+        id_by_name = {tag.name: tag.id for tag in existing}
+        for name in names:
+            if name in id_by_name:
+                continue
+            new_tag = await TagDao.ainsert_tag(
+                Tag(
+                    name=name,
+                    business_type=TagBusinessTypeEnum.KNOWLEDGE,
+                    business_id=str(knowledge_id),
+                    user_id=login_user.user_id,
+                    tenant_id=login_user.tenant_id,
+                )
+            )
+            id_by_name[name] = new_tag.id
+        return [id_by_name[name] for name in names]
+
+    @classmethod
+    async def get_chunk_tags(
+        cls,
+        login_user: UserPayload,
+        knowledge_id: int,
+        file_id: int,
+        chunk_indexes: list[int],
+    ) -> dict[int, list[str]]:
+        """Get tags keyed by chunk index for one knowledge file."""
+        await cls._get_readable_knowledge(login_user=login_user, knowledge_id=knowledge_id)
+        if not chunk_indexes:
+            return {}
+
+        resource_ids = [cls._chunk_resource_id(file_id, idx) for idx in chunk_indexes]
+        ids_by_resource = await TagDao.aget_resource_tag_ids_batch(
+            resource_ids, ResourceTypeEnum.KNOWLEDGE_CHUNK
+        )
+        all_tag_ids = {tag_id for tag_ids in ids_by_resource.values() for tag_id in tag_ids}
+        if not all_tag_ids:
+            return {idx: [] for idx in chunk_indexes}
+
+        tags = await TagDao.aget_tags_by_ids(list(all_tag_ids))
+        name_by_id = {tag.id: tag.name for tag in tags}
+
+        result: dict[int, list[str]] = {}
+        for idx, resource_id in zip(chunk_indexes, resource_ids):
+            result[idx] = [name_by_id[tid] for tid in ids_by_resource.get(resource_id, []) if tid in name_by_id]
+        return result
+
+    @classmethod
+    async def update_chunk_tags(
+        cls,
+        login_user: UserPayload,
+        knowledge_id: int,
+        file_id: int,
+        chunk_index: int,
+        tag_names: list[str],
+    ) -> list[str]:
+        """Replace the tag set attached to a single knowledge chunk."""
+        knowledge = await cls._get_writable_knowledge(login_user=login_user, knowledge_id=knowledge_id)
+
+        file_record = await KnowledgeFileDao.query_by_id(file_id)
+        if not file_record or file_record.knowledge_id != knowledge_id:
+            raise NotFoundError(msg="文档不存在")
+
+        names = list(dict.fromkeys(name.strip() for name in tag_names if name and name.strip()))
+        tag_ids = await cls._resolve_or_create_chunk_tag_ids(knowledge_id, names, login_user)
+        await TagDao.aupdate_resource_tags(
+            tag_ids,
+            cls._chunk_resource_id(file_id, chunk_index),
+            ResourceTypeEnum.KNOWLEDGE_CHUNK,
+            login_user.user_id,
+        )
+        # Keep the Elasticsearch keyword index in sync so chunk tags can
+        # participate in retrieval filtering.
+        await run_in_threadpool(
+            KnowledgeChunkAutoTagService.set_es_chunk_tags,
+            knowledge,
+            file_id,
+            chunk_index,
+            names,
+        )
+        return names
+
+    @classmethod
+    async def auto_tag_chunk(
+        cls,
+        login_user: UserPayload,
+        knowledge_id: int,
+        file_id: int,
+        chunk_index: int,
+        text: str | None = None,
+        model_id: int | None = None,
+    ) -> list[str]:
+        """Generate tags for one chunk with the knowledge LLM and persist them."""
+        await cls._get_writable_knowledge(login_user=login_user, knowledge_id=knowledge_id)
+
+        if not text or not text.strip():
+            knowledge = await KnowledgeDao.aquery_by_id(knowledge_id)
+            text = await run_in_threadpool(
+                cls._load_chunk_text_sync, knowledge, file_id, chunk_index
+            )
+        if not text or not text.strip():
+            raise NotFoundError(msg="切片内容为空")
+
+        from bisheng.llm.domain import LLMService
+
+        llm_config = LLMService.get_knowledge_llm(tenant_id=login_user.tenant_id)
+        llm_model_id = model_id or llm_config.extract_title_model_id
+        if not llm_model_id:
+            return []
+
+        llm = LLMService.get_bisheng_llm_sync(
+            model_id=llm_model_id,
+            app_id=ApplicationTypeEnum.KNOWLEDGE_BASE.value,
+            app_name=ApplicationTypeEnum.KNOWLEDGE_BASE.value,
+            app_type=ApplicationTypeEnum.KNOWLEDGE_BASE,
+            user_id=login_user.user_id,
+        )
+        tags = await run_in_threadpool(generate_chunk_auto_tags, llm, text)
+        if not tags:
+            return []
+
+        tag_ids = await cls._resolve_or_create_chunk_tag_ids(knowledge_id, tags, login_user)
+        await TagDao.add_tags(
+            tag_ids,
+            cls._chunk_resource_id(file_id, chunk_index),
+            ResourceTypeEnum.KNOWLEDGE_CHUNK,
+            login_user.user_id,
+        )
+        return tags
+
+    @staticmethod
+    def _load_chunk_text_sync(knowledge: Knowledge, file_id: int, chunk_index: int) -> str:
+        """Read one chunk's raw text from the ES index."""
+        try:
+            es_client = KnowledgeRag.init_knowledge_es_vectorstore_sync(knowledge)
+            res = es_client.client.search(
+                index=knowledge.index_name,
+                body={
+                    "query": {
+                        "bool": {
+                            "must": {"match": {"metadata.document_id": file_id}},
+                            "filter": {"match": {"metadata.chunk_index": chunk_index}},
+                        }
+                    },
+                    "size": 1,
+                },
+            )
+            hits = res.get("hits", {}).get("hits", [])
+            if not hits:
+                return ""
+            return hits[0].get("_source", {}).get("text", "")
+        except Exception:
+            logger.exception(
+                "load_chunk_text_failed knowledge_id={} file_id={} chunk_index={}",
+                knowledge.id,
+                file_id,
+                chunk_index,
+            )
+            return ""
+

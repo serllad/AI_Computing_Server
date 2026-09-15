@@ -20,6 +20,7 @@ class ResourceTypeEnum(Enum):
     WORKSTATION = 7  # Workstation
     SPACE_FILE = 8  # Knowledge Space File
     KNOWLEDGE_FILE = 9  # Knowledge Base File
+    KNOWLEDGE_CHUNK = 10  # Knowledge Base Chunk
 
 
 class GroupResourceBase(SQLModelSerializable):
