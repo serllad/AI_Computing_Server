@@ -2082,9 +2082,9 @@
     "title": "システム監視",
     "headerTitle": "AIコンピュート監視センター",
     "headerSub": "AI COMPUTE OBSERVABILITY · INTERACTIVE PROTOTYPE",
-    "clusterName": "ZC-01 · 学習/推論混在クラスタ",
+    "clusterName": "ZC-01 · Ascend学習/推論クラスタ",
     "singleCluster": "単一クラスタモード",
-    "centerHint": "異種チップ統合管理 · Ascend / Hygon DCU / Muxi / Iluvatar",
+    "centerHint": "Ascend統合管理 · Huawei Ascend 910B4",
     "live": "リアルタイム",
     "realtime": "リアルタイム",
     "sample": "サンプリング {{time}}",
@@ -2175,7 +2175,7 @@
     "alerts": {
       "a1": "ノード 10.20.1.21 の平均温度が高く、閾値70℃に接近",
       "a2": "クラスタ ZC-01 のスケジューリング方針を「公平共有」に切替",
-      "a3": "新ノード 10.20.1.41（Iluvatar BI-V150）の登録が完了"
+      "a3": "新ノード 10.20.1.12（Ascend 910B4）の登録が完了"
     },
     "alertsEmpty": "アラートなし、クラスタは正常です ✓",
     "alertsEmptyFilter": "このレベルのアラートはありません",
@@ -2183,9 +2183,9 @@
     "tasksSub": "SCHEDULER",
     "fairShare": "公平共有",
     "taskState": {
-      "running": "実行中",
-      "migrating": "移行中",
-      "queued": "待機中"
+      "running": "進行中",
+      "finished": "終了",
+      "queued": "スケジュール待ち"
     },
     "tasks": {
       "t1": "LLaMA-3.1-70B 分散事前学習",
@@ -2194,8 +2194,8 @@
       "t4": "Ascend · コードモデル全パラメータ微調整",
       "t5": "Ascend · ベクトル検索推論サービス",
       "t6": "Ascend · RAG QA推論",
-      "t7": "Muxi · テキスト画像生成推論",
-      "t8": "Iluvatar · 動画理解推論",
+      "t7": "Ascend · テキスト画像生成推論",
+      "t8": "Ascend · 動画理解推論",
       "t9": "科学計算 CFD バッチジョブ",
       "t10": "Ascend · オフラインバッチ翻訳"
     },
@@ -2222,7 +2222,7 @@
     },
     "status": {
       "on": "正常",
-      "migrating": "移行中",
+      "finished": "終了",
       "down": "異常"
     },
     "actions": {

@@ -2082,9 +2082,9 @@
     "title": "系统监控",
     "headerTitle": "智算资源监控中心",
     "headerSub": "AI COMPUTE OBSERVABILITY · INTERACTIVE PROTOTYPE",
-    "clusterName": "ZC-01 · 训练/推理混部集群",
+    "clusterName": "ZC-01 · 昇腾训练/推理集群",
     "singleCluster": "单集群模式",
-    "centerHint": "异构芯片统一纳管 · 昇腾 / 海光DCU / 沐曦 / 天数智芯",
+    "centerHint": "昇腾芯片统一纳管 · 华为昇腾 910B4",
     "live": "实时监控",
     "realtime": "实时",
     "sample": "采样 {{time}}",
@@ -2175,7 +2175,7 @@
     "alerts": {
       "a1": "节点 10.20.1.21 平均温度偏高，接近阈值 70℃",
       "a2": "集群 ZC-01 调度策略已切换为「公平共享」",
-      "a3": "新节点 10.20.1.41（天数智芯 BI-V150）注册纳管成功"
+      "a3": "新节点 10.20.1.12（昇腾 910B4）注册纳管成功"
     },
     "alertsEmpty": "暂无告警，集群运行正常 ✓",
     "alertsEmptyFilter": "该级别暂无告警",
@@ -2183,9 +2183,9 @@
     "tasksSub": "SCHEDULER",
     "fairShare": "公平共享",
     "taskState": {
-      "running": "运行中",
-      "migrating": "迁移中",
-      "queued": "排队中"
+      "running": "进行中",
+      "finished": "已结束",
+      "queued": "等待调度"
     },
     "tasks": {
       "t1": "LLaMA-3.1-70B 分布式预训练",
@@ -2194,8 +2194,8 @@
       "t4": "昇腾 · 代码模型全参微调",
       "t5": "昇腾 · 向量检索推理服务",
       "t6": "昇腾 · RAG 问答推理",
-      "t7": "沐曦 · 文生图推理",
-      "t8": "天数 · 视频理解推理",
+      "t7": "昇腾 · 文生图推理",
+      "t8": "昇腾 · 视频理解推理",
       "t9": "科学计算 CFD 批作业",
       "t10": "昇腾 · 离线批量翻译"
     },
@@ -2222,7 +2222,7 @@
     },
     "status": {
       "on": "正常",
-      "migrating": "迁移中",
+      "finished": "已结束",
       "down": "异常"
     },
     "actions": {

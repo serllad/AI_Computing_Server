@@ -2137,9 +2137,9 @@
     "title": "System Monitoring",
     "headerTitle": "AI Compute Monitoring Center",
     "headerSub": "AI COMPUTE OBSERVABILITY · INTERACTIVE PROTOTYPE",
-    "clusterName": "ZC-01 · Training/Inference Mixed Cluster",
+    "clusterName": "ZC-01 · Ascend Training/Inference Cluster",
     "singleCluster": "Single-cluster mode",
-    "centerHint": "Unified heterogeneous accelerator management · Ascend / Hygon DCU / Muxi / Iluvatar",
+    "centerHint": "Unified Ascend management · Huawei Ascend 910B4",
     "live": "Live",
     "realtime": "Live",
     "sample": "Sampled {{time}}",
@@ -2230,7 +2230,7 @@
     "alerts": {
       "a1": "Node 10.20.1.21 average temperature is high, approaching 70°C",
       "a2": "Cluster ZC-01 scheduling policy switched to Fair Share",
-      "a3": "New node 10.20.1.41 (Iluvatar BI-V150) registered successfully"
+      "a3": "New node 10.20.1.12 (Ascend 910B4) registered successfully"
     },
     "alertsEmpty": "No alerts, cluster is healthy ✓",
     "alertsEmptyFilter": "No alerts at this level",
@@ -2238,9 +2238,9 @@
     "tasksSub": "SCHEDULER",
     "fairShare": "Fair Share",
     "taskState": {
-      "running": "Running",
-      "migrating": "Migrating",
-      "queued": "Queued"
+      "running": "In Progress",
+      "finished": "Finished",
+      "queued": "Waiting"
     },
     "tasks": {
       "t1": "LLaMA-3.1-70B distributed pre-training",
@@ -2249,8 +2249,8 @@
       "t4": "Ascend · code model full fine-tuning",
       "t5": "Ascend · vector retrieval inference service",
       "t6": "Ascend · RAG QA inference",
-      "t7": "Muxi · text-to-image inference",
-      "t8": "Iluvatar · video understanding inference",
+      "t7": "Ascend · text-to-image inference",
+      "t8": "Ascend · video understanding inference",
       "t9": "Scientific computing CFD batch job",
       "t10": "Ascend · offline batch translation"
     },
@@ -2277,7 +2277,7 @@
     },
     "status": {
       "on": "Healthy",
-      "migrating": "Migrating",
+      "finished": "Finished",
       "down": "Down"
     },
     "actions": {
