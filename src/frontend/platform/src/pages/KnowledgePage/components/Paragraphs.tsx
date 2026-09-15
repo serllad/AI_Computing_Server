@@ -897,6 +897,7 @@ export default function Paragraphs({ fileId, onBack, canEditKb = false, canDelet
                             <PreviewParagraph
                                 key={`preview-${selectedFileId}-${chunkSwitchTrigger}`}
                                 knowledgeId={id}
+                                showTags
                                 fileId={selectedFileId}
                                 previewCount={datalist.length}
                                 edit={canEditKb}

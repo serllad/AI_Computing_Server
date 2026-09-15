@@ -41,6 +41,9 @@ from bisheng.knowledge.domain.models.knowledge_file import (
     QAStatus,
 )
 from bisheng.knowledge.domain.schemas.knowledge_rag_schema import QAKnowledgeMetadata
+from bisheng.knowledge.domain.services.knowledge_chunk_auto_tag_service import (
+    KnowledgeChunkAutoTagService,
+)
 from bisheng.knowledge.domain.services.knowledge_space_auto_tag_service import KnowledgeSpaceAutoTagService
 from bisheng.knowledge.domain.services.knowledge_utils import KnowledgeUtils
 from bisheng.knowledge.rag.knowledge_file_pipeline import KnowledgeFilePipeline
@@ -237,6 +240,14 @@ def addEmbedding(
             )
             pipeline_result = knowledge_file_pipeline.run()
             db_file.status = KnowledgeFileStatus.SUCCESS.value
+
+            # Auto-generate tags for every chunk after parsing completes.
+            KnowledgeChunkAutoTagService.apply_after_ingest(
+                knowledge=knowledge_info,
+                db_file=db_file,
+                documents=pipeline_result.documents,
+            )
+
 
             # TODO[plan-3-async]: trigger SimHash similar-scan after successful parse.
             # addEmbedding runs in a sync Celery worker; async scan is deferred to a

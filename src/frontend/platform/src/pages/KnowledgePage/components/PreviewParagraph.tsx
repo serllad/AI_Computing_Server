@@ -7,7 +7,7 @@ import { locationContext } from "@/contexts/locationContext";
 import MessageMarkDown from "@/pages/BuildPage/flow/FlowChat/MessageMarkDown";
 import { cn } from "@/util/utils";
 import { debounce } from "lodash-es";
-import { CircleX, FileCode, LocateFixed, Plus, Sparkles, X } from "lucide-react";
+import { CircleX, FileCode, LocateFixed, Plus, X } from "lucide-react";
 import { forwardRef, useCallback, useContext, useEffect, useImperativeHandle, useRef, useState } from "react";
 import AceEditor from "react-ace";
 import Vditor from 'vditor';
@@ -16,7 +16,7 @@ import useKnowledgeStore from "../useKnowledgeStore";
 // 新增：引入国际化hooks
 import { useTranslation } from "react-i18next";
 import { useMiniDebounce } from "@/util/hook";
-import { autoTagKnowledgeChunkApi, getKnowledgeChunkTagsApi, updateKnowledgeChunkTagsApi } from "@/controllers/API";
+import { getKnowledgeChunkTagsApi, updateKnowledgeChunkTagsApi } from "@/controllers/API";
 import { captureAndAlertRequestErrorHoc } from "@/controllers/request";
 
 export const MarkdownView = ({ noHead = false, data }) => {
@@ -155,7 +155,7 @@ const VditorEditor = forwardRef(({ defalutValue, hidden, onBlur, onChange }, ref
     return <div ref={domRef} className={`${hidden ? 'hidden' : ''} overflow-y-auto border-none file-vditor`}></div>;
 });
 
-const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDelete = false, onClick, onDel, onChange, onPositionClick, tags = [], tagLoading = false, onSaveTags, onAutoTag }) => {
+const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDelete = false, onClick, onDel, onChange, onPositionClick, tags = [], onSaveTags, showTags = false }) => {
     const { t } = useTranslation('knowledge');
 
     const [showSourceEdit, setShowSourceEdit] = useState(false); // 编辑原始格式
@@ -221,10 +221,6 @@ const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDele
         onSaveTags?.(data.chunkIndex, tags.filter((tag) => tag !== name))
     }
 
-    const handleAutoTagClick = async (e) => {
-        e.stopPropagation()
-        await onAutoTag?.(data.chunkIndex, data.text)
-    }
 
     return <div
         className={cn("group p-4 py-3 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-primary transition-shadow w-full",
@@ -284,7 +280,7 @@ const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDele
         {edit && <AceEditorCom hidden={!showSourceEdit} markdown={value} onChange={setDebounceValue} onBlur={handleBlurDebounced} />}
 
         {/* 切片标签 */}
-        {(tags.length > 0 || edit) && (
+        {(showTags && (tags.length > 0 || edit)) && (
             <div className="mt-2 flex flex-wrap items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                 {tags.map((tag) => (
                     <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs leading-5 text-primary">
@@ -325,24 +321,13 @@ const EditMarkdown = ({ data, active, oneLeft, fileSuffix, edit = false, canDele
                         {t('addTag')}
                     </button>
                 ) : null}
-                {edit && (
-                    <button
-                        type="button"
-                        disabled={tagLoading}
-                        className="inline-flex items-center gap-1 rounded-full border border-primary/30 px-2 py-0.5 text-xs leading-5 text-primary hover:bg-primary/5 disabled:opacity-50"
-                        onClick={handleAutoTagClick}
-                    >
-                        <Sparkles size={12} />
-                        {tagLoading ? t('autoTagging') : t('autoTag')}
-                    </button>
-                )}
             </div>
         )}
     </div>
 }
 
 // 分段结果列表
-export default function PreviewParagraph({ knowledgeId, fileId, page = 1, previewCount, edit, canDelete = false, fileSuffix, loading, chunks, className, onDel, onChange }) {
+export default function PreviewParagraph({ knowledgeId, fileId, page = 1, previewCount, edit, canDelete = false, fileSuffix, loading, chunks, className, onDel, onChange, showTags = false }) {
     const { t } = useTranslation('knowledge');
 
     const containerRef = useRef(null);
@@ -353,10 +338,9 @@ export default function PreviewParagraph({ knowledgeId, fileId, page = 1, previe
 
     // Chunk tag state
     const [tagsByChunk, setTagsByChunk] = useState<Record<number, string[]>>({})
-    const [tagLoadingChunk, setTagLoadingChunk] = useState<number | null>(null)
 
     const loadChunkTags = useCallback(async () => {
-        if (!knowledgeId || !fileId || !chunks.length) return
+        if (!showTags || !knowledgeId || !fileId || !chunks.length) return
         const chunkIndexes = chunks.map((chunk) => chunk.chunkIndex)
         try {
             const res = await captureAndAlertRequestErrorHoc(getKnowledgeChunkTagsApi({
@@ -368,14 +352,14 @@ export default function PreviewParagraph({ knowledgeId, fileId, page = 1, previe
         } catch {
             // Tag fetch failures are non-blocking for chunk preview
         }
-    }, [knowledgeId, fileId, chunks])
+    }, [showTags, knowledgeId, fileId, chunks])
 
     useEffect(() => {
         loadChunkTags()
     }, [loadChunkTags])
 
     const handleSaveTags = useCallback(async (chunkIndex, tags) => {
-        if (!edit) return
+        if (!showTags || !edit) return
         try {
             await captureAndAlertRequestErrorHoc(updateKnowledgeChunkTagsApi({
                 knowledge_id: Number(knowledgeId),
@@ -387,27 +371,8 @@ export default function PreviewParagraph({ knowledgeId, fileId, page = 1, previe
         } catch {
             // Error toast is handled by captureAndAlertRequestErrorHoc
         }
-    }, [edit, knowledgeId, fileId])
+    }, [showTags, edit, knowledgeId, fileId])
 
-    const handleAutoTag = useCallback(async (chunkIndex, text) => {
-        if (!edit) return null
-        setTagLoadingChunk(chunkIndex)
-        try {
-            const res = await captureAndAlertRequestErrorHoc(autoTagKnowledgeChunkApi({
-                knowledge_id: Number(knowledgeId),
-                file_id: Number(fileId),
-                chunk_index: chunkIndex,
-                text
-            }))
-            const tags = res?.tags || []
-            setTagsByChunk((prev) => ({ ...prev, [chunkIndex]: tags }))
-            return tags
-        } catch {
-            return null
-        } finally {
-            setTagLoadingChunk(null)
-        }
-    }, [edit, knowledgeId, fileId])
     useEffect(() => {
         const fun = () => setSelectedChunkIndex(-1) // 失焦
         document.addEventListener('click', fun)
@@ -472,9 +437,8 @@ export default function PreviewParagraph({ knowledgeId, fileId, page = 1, previe
                             onDel={onDel}
                             onChange={onChange}
                             tags={tagsByChunk[chunk.chunkIndex] || []}
-                            tagLoading={tagLoadingChunk === chunk.chunkIndex}
                             onSaveTags={handleSaveTags}
-                            onAutoTag={handleAutoTag}
+                            showTags={showTags}
                         />
                         : <MarkdownView key={fileId + previewCount + chunk.chunkIndex} data={chunk} />
                 ))}

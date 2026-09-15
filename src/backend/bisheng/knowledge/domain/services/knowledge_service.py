@@ -77,6 +77,9 @@ from bisheng.knowledge.domain.schemas.knowledge_schema import (
     AddKnowledgeMetadataFieldsReq,
     UpdateKnowledgeMetadataFieldsReq,
 )
+from bisheng.knowledge.domain.services.knowledge_chunk_auto_tag_service import (
+    generate_chunk_auto_tags,
+)
 from bisheng.knowledge.domain.services.knowledge_audit_telemetry_service import KnowledgeAuditTelemetryService
 from bisheng.knowledge.domain.services.knowledge_metadata_service import KnowledgeMetadataService
 from bisheng.knowledge.domain.services.knowledge_permission_service import (
@@ -2943,7 +2946,7 @@ class KnowledgeService(KnowledgeUtils):
             app_type=ApplicationTypeEnum.KNOWLEDGE_BASE,
             user_id=login_user.user_id,
         )
-        tags = await run_in_threadpool(_generate_chunk_auto_tags, llm, text)
+        tags = await run_in_threadpool(generate_chunk_auto_tags, llm, text)
         if not tags:
             return []
 
@@ -2986,41 +2989,3 @@ class KnowledgeService(KnowledgeUtils):
             )
             return ""
 
-
-CHUNK_AUTO_TAG_SYSTEM_PROMPT = (
-    "你是知识库切片标签生成器。请阅读切片内容，提炼 2-5 个简短、准确的中文标签。"
-    "只输出 JSON：{\"tags\": [\"标签1\", \"标签2\"]}。"
-)
-
-
-def _generate_chunk_auto_tags(llm, text: str) -> list[str]:
-    """Invoke the configured LLM and parse the generated chunk tags."""
-    import re
-
-    raw = ""
-    try:
-        response = llm.invoke(
-            [
-                {"role": "system", "content": CHUNK_AUTO_TAG_SYSTEM_PROMPT},
-                {"role": "user", "content": f"切片内容：\n{text[:3000]}"},
-            ]
-        )
-        raw = getattr(response, "content", "") or ""
-    except Exception:
-        logger.exception("chunk_auto_tag_llm_failed")
-        return []
-
-    payload = None
-    fenced = re.search(r"```(?:json)?\s*(.*?)```", raw, re.S)
-    if fenced:
-        raw = fenced.group(1).strip()
-    try:
-        payload = json.loads(raw)
-    except json.JSONDecodeError:
-        logger.warning("chunk_auto_tag_invalid_json raw={}", raw[:300])
-        return []
-
-    tags = payload.get("tags") if isinstance(payload, dict) else None
-    if not isinstance(tags, list):
-        return []
-    return list(dict.fromkeys(str(tag).strip() for tag in tags if str(tag).strip()))[:5]
