@@ -19,6 +19,7 @@ of the deprecated ORM ``Collection`` API.
 """
 
 import threading
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -133,7 +134,8 @@ class Milvus(_LangchainMilvus):
         timeout: float | None = None,
         **kwargs: Any,
     ) -> Any:
-        return super()._collection_search(
+        start = time.perf_counter()
+        result = super()._collection_search(
             embedding_or_text,
             k=k,
             param=self._ensure_ef_covers_k(param, k),
@@ -141,6 +143,13 @@ class Milvus(_LangchainMilvus):
             timeout=timeout,
             **kwargs,
         )
+        logger.info(
+            "milvus_search_cost collection={} k={} cost={:.3f}s",
+            self.collection_name,
+            k,
+            time.perf_counter() - start,
+        )
+        return result
 
     async def _acollection_search(
         self,
