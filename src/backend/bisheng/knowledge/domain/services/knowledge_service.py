@@ -78,6 +78,7 @@ from bisheng.knowledge.domain.schemas.knowledge_schema import (
     UpdateKnowledgeMetadataFieldsReq,
 )
 from bisheng.knowledge.domain.services.knowledge_chunk_auto_tag_service import (
+    KnowledgeChunkAutoTagService,
     generate_chunk_auto_tags,
 )
 from bisheng.knowledge.domain.services.knowledge_audit_telemetry_service import KnowledgeAuditTelemetryService
@@ -2895,7 +2896,7 @@ class KnowledgeService(KnowledgeUtils):
         tag_names: list[str],
     ) -> list[str]:
         """Replace the tag set attached to a single knowledge chunk."""
-        await cls._get_writable_knowledge(login_user=login_user, knowledge_id=knowledge_id)
+        knowledge = await cls._get_writable_knowledge(login_user=login_user, knowledge_id=knowledge_id)
 
         file_record = await KnowledgeFileDao.query_by_id(file_id)
         if not file_record or file_record.knowledge_id != knowledge_id:
@@ -2908,6 +2909,15 @@ class KnowledgeService(KnowledgeUtils):
             cls._chunk_resource_id(file_id, chunk_index),
             ResourceTypeEnum.KNOWLEDGE_CHUNK,
             login_user.user_id,
+        )
+        # Keep the Elasticsearch keyword index in sync so chunk tags can
+        # participate in retrieval filtering.
+        await run_in_threadpool(
+            KnowledgeChunkAutoTagService.set_es_chunk_tags,
+            knowledge,
+            file_id,
+            chunk_index,
+            names,
         )
         return names
 

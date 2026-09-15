@@ -6,5 +6,5 @@ from pydantic import BaseModel
 # Custom Extended Fields schema
 class RagMetadataFieldSchema(BaseModel):
     field_name: str
-    field_type: Literal['text', 'boolean', 'int8', 'int16', 'int32', 'int64', 'float', 'double', 'json']
+    field_type: Literal['text', 'boolean', 'int8', 'int16', 'int32', 'int64', 'float', 'double', 'json', 'keyword']
     kwargs: Optional[dict] = None

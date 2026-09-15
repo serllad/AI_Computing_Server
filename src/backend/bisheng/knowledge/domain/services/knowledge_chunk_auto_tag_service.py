@@ -7,9 +7,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 
 from bisheng.common.constants.enums.telemetry import ApplicationTypeEnum
+from bisheng.common.constants.vectorstore_metadata import KNOWLEDGE_RAG_METADATA_SCHEMA
 from bisheng.core.database import get_sync_db_session
 from bisheng.database.models.group_resource import ResourceTypeEnum
 from bisheng.database.models.tag import Tag, TagBusinessTypeEnum, TagLink
+from bisheng.knowledge.domain.knowledge_rag import KnowledgeRag
 from bisheng.knowledge.domain.models.knowledge import Knowledge, KnowledgeTypeEnum
 from bisheng.knowledge.domain.models.knowledge_file import KnowledgeFile
 from bisheng.llm.domain import LLMService
@@ -95,6 +97,7 @@ class KnowledgeChunkAutoTagService:
                 if not tags:
                     continue
                 cls._append_chunk_tags(knowledge, db_file, int(chunk_index), tags)
+                cls.set_es_chunk_tags(knowledge, db_file.id, int(chunk_index), tags)
         except Exception:
             logger.exception(
                 "chunk_auto_tag_failed file_id={} knowledge_id={}",
@@ -110,6 +113,38 @@ class KnowledgeChunkAutoTagService:
             and knowledge.type == KnowledgeTypeEnum.NORMAL.value
             and bool(documents)
         )
+
+    @staticmethod
+    def set_es_chunk_tags(knowledge: Knowledge, file_id: int, chunk_index: int, tag_names: Iterable[str]) -> None:
+        """Persist chunk tags into the Elasticsearch keyword index."""
+        tags = list(dict.fromkeys(str(name).strip() for name in tag_names if name and str(name).strip()))
+        try:
+            es_client = KnowledgeRag.init_knowledge_es_vectorstore_sync(
+                knowledge=knowledge,
+                metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA,
+            )
+            es_client.client.update_by_query(
+                index=knowledge.index_name,
+                body={
+                    "query": {
+                        "bool": {
+                            "must": {"match": {"metadata.document_id": file_id}},
+                            "filter": {"match": {"metadata.chunk_index": chunk_index}},
+                        }
+                    },
+                    "script": {
+                        "source": "ctx._source.metadata.tags = params.tags;",
+                        "params": {"tags": tags},
+                    },
+                },
+                conflicts="proceed",
+            )
+        except Exception:
+            logger.exception(
+                "set_es_chunk_tags_failed file_id={} chunk_index={}",
+                file_id,
+                chunk_index,
+            )
 
     @classmethod
     def _append_chunk_tags(

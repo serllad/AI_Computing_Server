@@ -45,6 +45,10 @@ class MilvusFactory:
                 milvus_metadata_schema[schema.field_name] = {'dtype': DataType.DOUBLE, "kwargs": schema_kwargs}
             elif schema.field_type == 'json':
                 milvus_metadata_schema[schema.field_name] = {'dtype': DataType.JSON, "kwargs": schema_kwargs}
+            elif schema.field_type == 'keyword':
+                # Keyword array is stored in Elasticsearch only; Milvus keeps
+                # this field out of its collection schema.
+                continue
             elif schema.field_type == 'boolean':
                 milvus_metadata_schema[schema.field_name] = {'dtype': DataType.BOOL, "kwargs": schema_kwargs}
 
