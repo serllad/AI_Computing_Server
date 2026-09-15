@@ -206,7 +206,7 @@ class RagUtils(BaseNode):
         self._multi_milvus_retriever = None
         self._multi_es_retriever = None
         self._knowledge_vector_list = []
-        self._retriever_kwargs = {"k": 100, "param": {"ef": 110}}
+        self._retriever_kwargs = {"k": 30, "param": {"ef": 64}}
         self._rerank_model = None
         self._knowledge_retriever_tool = None
 
