@@ -3,6 +3,7 @@ from typing import Optional, Dict, List
 
 import numpy as np
 from langchain_core.embeddings import Embeddings
+import time
 from loguru import logger
 from pydantic import Field
 from typing_extensions import Self
@@ -175,7 +176,16 @@ class BishengEmbedding(BishengBase, Embeddings):
     @wrapper_bisheng_model_limit_check
     def embed_query(self, text: str) -> List[float]:
         """embedding"""
+        start = time.perf_counter()
         ret = self.embeddings.embed_query(text)
         if np.linalg.norm(ret) != 1:
             ret = (np.array(ret) / np.linalg.norm(ret)).tolist()
+        logger.info(
+            "embedding_query_cost model={} server_type={} text_len={} dim={} cost={:.3f}s",
+            self.model_name,
+            self.server_info.type,
+            len(text),
+            len(ret),
+            time.perf_counter() - start,
+        )
         return ret
