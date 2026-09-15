@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Any, Literal
 
 from langchain_core.documents import Document
+import time
+
 from loguru import logger
 from pydantic import BaseModel, Field
 
@@ -222,9 +224,12 @@ class RagUtils(BaseNode):
             return str(timestamp)
 
     def retrieve_question(self, question: str) -> list[Document]:
+        start = time.perf_counter()
         # F041: knowledge spaces go through the F029 view_file-filtered path.
         if self._knowledge_type == "space":
-            return self._retrieve_space_question(question)
+            docs = self._retrieve_space_question(question)
+            logger.info("rag_retrieve_question_cost type=space total={:.3f}s docs={}", time.perf_counter() - start, len(docs))
+            return docs
         # 1: retrieve documents from multi retrievers
         knowledge_retriever_tool = KnowledgeRetrieverTool(
             vector_retriever=self._multi_milvus_retriever,
@@ -238,6 +243,11 @@ class RagUtils(BaseNode):
         # Direct call: this retriever is an internal step of the node, not a tool
         # call of its own, and `invoke` would surface it as one in the run log.
         finally_docs = knowledge_retriever_tool._run(question)
+        logger.info(
+            "rag_retrieve_question_cost type=knowledge total={:.3f}s docs={}",
+            time.perf_counter() - start,
+            len(finally_docs),
+        )
         all_file_id = set([one.metadata.get("document_id") for one in finally_docs])
         file_map = {}
         if finally_docs:
@@ -376,6 +386,7 @@ class RagUtils(BaseNode):
     def init_knowledge_retriever(self):
         """retriever from knowledge base"""
         if not self._knowledge_vector_list:
+            start = time.perf_counter()
             self._knowledge_vector_list = KnowledgeRag.get_multi_knowledge_vectorstore_sync(
                 invoke_user_id=self.user_id,
                 knowledge_ids=self._knowledge_value,
@@ -383,6 +394,11 @@ class RagUtils(BaseNode):
                 check_auth=self._knowledge_auth,
                 include_es=self._keyword_weight > 0,
                 include_milvus=self._vector_weight > 0,
+            )
+            logger.info(
+                "knowledge_init_cost type=knowledge kbs={} total={:.3f}s",
+                len(self._knowledge_vector_list),
+                time.perf_counter() - start,
             )
         all_milvus = []
         all_milvus_filter = []
