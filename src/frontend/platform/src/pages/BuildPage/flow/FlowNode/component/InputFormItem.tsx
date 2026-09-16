@@ -954,6 +954,8 @@ export default function InputFormItem({ data, nodeId, onChange, onValidate, onVa
 
             if (el.type === 'file') {
                 // 文件类型按统一规则列出产出变量：解析结果(解析时) / 图片(含图片类型) / 路径(恒) / 临时库名(入库时)
+                // For form_input with multiple file fields, each field gets unique output variable names
+                // by prefixing with the unique key (el.key) to avoid conflicts
                 const variableParts = [];
                 const arr = Array.isArray(el.file_parse_mode)
                     ? el.file_parse_mode
@@ -962,9 +964,12 @@ export default function InputFormItem({ data, nodeId, onChange, onValidate, onVa
                 const isIngest = arr.includes(FileProcessingStrategy.TempKnowledge);
                 const isImageCapable = acceptsImages(el.file_type);
 
-                if (isParse && el.file_content) variableParts.push(el.file_content);
-                if (isImageCapable && el.image_file) variableParts.push(el.image_file);
-                if (el.file_path) variableParts.push(el.file_path);
+                // Prefix variable names with the unique key for multiple file fields
+                const prefix = el.key ? `${el.key}_` : '';
+
+                if (isParse && el.file_content) variableParts.push(`${prefix}${el.file_content}`);
+                if (isImageCapable && el.image_file) variableParts.push(`${prefix}${el.image_file}`);
+                if (el.file_path) variableParts.push(`${prefix}${el.file_path}`);
                 if (isIngest) variableParts.push(el.key);
 
                 if (variableParts.length > 0) {
