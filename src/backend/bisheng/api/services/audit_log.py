@@ -693,6 +693,46 @@ class AuditLogService:
         )
         await AuditLogDao.ainsert_audit_logs([audit_log])
 
+    # ========== Dataset Audit Log ==========
+
+    @classmethod
+    async def _dataset_log(cls, user: UserPayload, ip_address: str, group_ids: List[int],
+                           event_type: EventType, object_id: str, object_name: str):
+        """Internal helper for dataset module audit logs."""
+        audit_log = AuditLog(
+            operator_id=user.user_id,
+            operator_name=user.user_name,
+            group_ids=group_ids,
+            system_id=SystemId.DATASET.value,
+            event_type=event_type.value,
+            object_type=ObjectType.DATASET.value,
+            object_id=object_id,
+            object_name=object_name,
+            ip_address=ip_address,
+        )
+        await AuditLogDao.ainsert_audit_logs([audit_log])
+
+    @classmethod
+    async def create_dataset(cls, user: UserPayload, ip_address: str, dataset_id: str,
+                             dataset_name: str, group_ids: List[int]):
+        """Audit: dataset created (local upload or QA import)."""
+        logger.info(f"act=create_dataset user={user.user_name} ip={ip_address} dataset_id={dataset_id}")
+        await cls._dataset_log(user, ip_address, group_ids, EventType.CREATE_DATASET, dataset_id, dataset_name)
+
+    @classmethod
+    async def update_dataset(cls, user: UserPayload, ip_address: str, dataset_id: str,
+                             dataset_name: str, group_ids: List[int]):
+        """Audit: dataset records updated or cleaned."""
+        logger.info(f"act=update_dataset user={user.user_name} ip={ip_address} dataset_id={dataset_id}")
+        await cls._dataset_log(user, ip_address, group_ids, EventType.UPDATE_DATASET, dataset_id, dataset_name)
+
+    @classmethod
+    async def delete_dataset(cls, user: UserPayload, ip_address: str, dataset_id: str,
+                             dataset_name: str, group_ids: List[int]):
+        """Audit: dataset deleted."""
+        logger.info(f"act=delete_dataset user={user.user_name} ip={ip_address} dataset_id={dataset_id}")
+        await cls._dataset_log(user, ip_address, group_ids, EventType.DELETE_DATASET, dataset_id, dataset_name)
+
     @classmethod
     async def get_filter_flow_ids(cls, user: UserPayload, flow_ids: List[str], group_ids: List[int]) -> (bool, List):
         """Filter workflow, assistant and workstation ids by visible groups."""
