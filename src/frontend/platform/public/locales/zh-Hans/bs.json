@@ -1221,7 +1221,8 @@
       "knowledge_space": "知识空间",
       "tenant": "租户管理",
       "llm": "模型管理",
-      "approval": "审批管理"
+      "approval": "审批管理",
+      "dataset": "数据集"
     },
     "eventTypeEnum": {
       "createChat": "新建会话",
@@ -1294,7 +1295,11 @@
       "approvalFlowUpdate": "更新审批流程",
       "approvalScenarioToggle": "审批场景启停",
       "approvalScenarioCreate": "创建审批场景",
-      "approvalMenuAccessRevokeGrant": "撤回菜单授权"
+      "approvalMenuAccessRevokeGrant": "撤回菜单授权",
+      "create_dataset": "新建数据集",
+      "update_dataset": "编辑数据集",
+      "delete_dataset": "删除数据集",
+      "upload_dataset": "上传数据集"
     },
     "objectTypeEnum": {
       "none": "无",
@@ -1317,7 +1322,8 @@
       "approval_task": "审批任务",
       "approval_exception": "审批异常",
       "approval_scenario": "审批场景",
-      "approval_flow": "审批流程"
+      "approval_flow": "审批流程",
+      "dataset": "数据集"
     },
     "appUsage": "应用使用",
     "systemOperations": "系统操作",

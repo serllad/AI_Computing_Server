@@ -1238,7 +1238,8 @@
       "knowledge_space": "Knowledge Space",
       "tenant": "Tenant Management",
       "llm": "Model Management",
-      "approval": "Approval Management"
+      "approval": "Approval Management",
+      "dataset": "Dataset"
     },
     "eventTypeEnum": {
       "createChat": "Create Session",
@@ -1311,7 +1312,11 @@
       "approvalFlowUpdate": "Update Approval Flow",
       "approvalScenarioToggle": "Toggle Approval Scenario",
       "approvalScenarioCreate": "Create Approval Scenario",
-      "approvalMenuAccessRevokeGrant": "Revoke Menu Access Grant"
+      "approvalMenuAccessRevokeGrant": "Revoke Menu Access Grant",
+      "create_dataset": "Create Dataset",
+      "update_dataset": "Update Dataset",
+      "delete_dataset": "Delete Dataset",
+      "upload_dataset": "Upload Dataset"
     },
     "objectTypeEnum": {
       "none": "None",
@@ -1334,7 +1339,8 @@
       "approval_task": "Approval Task",
       "approval_exception": "Approval Exception",
       "approval_scenario": "Approval Scenario",
-      "approval_flow": "Approval Flow"
+      "approval_flow": "Approval Flow",
+      "dataset": "Dataset"
     },
     "appUsage": "App Usage",
     "systemOperations": "System Operations",

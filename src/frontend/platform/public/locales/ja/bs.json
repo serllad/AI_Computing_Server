@@ -1221,7 +1221,8 @@
       "knowledge_space": "ナレッジスペース",
       "tenant": "テナント管理",
       "llm": "モデル管理",
-      "approval": "承認管理"
+      "approval": "承認管理",
+      "dataset": "データセット"
     },
     "eventTypeEnum": {
       "createChat": "新規チャット作成",
@@ -1294,7 +1295,11 @@
       "approvalFlowUpdate": "承認フロー更新",
       "approvalScenarioToggle": "承認シナリオの有効化/無効化",
       "approvalScenarioCreate": "承認シナリオを作成",
-      "approvalMenuAccessRevokeGrant": "メニュー権限付与を取り消し"
+      "approvalMenuAccessRevokeGrant": "メニュー権限付与を取り消し",
+      "create_dataset": "データセット作成",
+      "update_dataset": "データセット編集",
+      "delete_dataset": "データセット削除",
+      "upload_dataset": "データセットアップロード"
     },
     "objectTypeEnum": {
       "none": "なし",
@@ -1317,7 +1322,8 @@
       "approval_task": "審査タスク",
       "approval_exception": "審査例外",
       "approval_scenario": "審査シナリオ",
-      "approval_flow": "審査フロー"
+      "approval_flow": "審査フロー",
+      "dataset": "データセット"
     },
     "appUsage": "アプリ利用状況",
     "systemOperations": "システム操作",
