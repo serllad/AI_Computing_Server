@@ -191,11 +191,11 @@ export function isVarInFlow(nodeId, nodes, varName, varNameCn) {
                     return param.value.some(item => {
                         // 文本类型
                         if (item.type === 'text' && `${node.id}.${item.key}` !== varName) return false
-                        // if (item.multiple) return `${node.id}.${item.key}` === varName
-                        // 文件类型
-                        const vars = [`${node.id}.${item.key}`, `${node.id}.${item.file_content}`, `${node.id}.${item.file_path}`]
+                        // 文件类型：与 SelectVar / InputFormItem 保持一致，给 file_content / file_path / image_file 加 {item.key}_ 前缀
+                        const prefix = item.key && item.type === 'file' ? `${item.key}_` : '';
+                        const vars = [`${node.id}.${item.key}`, `${node.id}.${prefix}${item.file_content}`, `${node.id}.${prefix}${item.file_path}`]
                         // 图片类型追加校验变量
-                        item.file_type !== 'file' && vars.push(`${node.id}.${item.image_file}`)
+                        item.file_type !== 'file' && vars.push(`${node.id}.${prefix}${item.image_file}`)
                         return vars.includes(varName)
                     })
                 } else if (param.hidden) {
