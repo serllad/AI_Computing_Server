@@ -1,10 +1,12 @@
 import json
+import os
 import tempfile
 from typing import Optional
 
-from fastapi import APIRouter, Body, Depends, File, Query, UploadFile
+from fastapi import APIRouter, Body, Depends, File, Query, Request, UploadFile
 from loguru import logger
 
+from bisheng.api.services.audit_log import AuditLogService
 from bisheng.common.dependencies.user_deps import UserPayload
 from bisheng.common.schemas.api import resp_200, PageData
 from bisheng.core.cache.utils import async_file_download
@@ -14,6 +16,8 @@ from bisheng.finetune.domain.services.finetune import FinetuneService
 from bisheng.finetune.domain.services.finetune_file import FinetuneFileService
 from bisheng.knowledge.domain.models.knowledge import KnowledgeDao
 from bisheng.knowledge.domain.models.knowledge_file import QAKnoweldgeDao
+from bisheng.database.models.user_group import UserGroupDao
+from bisheng.utils import get_request_ip
 from ..schemas import FinetuneCreateReq
 
 router = APIRouter(prefix='/finetune', tags=['Finetune'], dependencies=[Depends(UserPayload.get_tenant_admin_user)])
@@ -121,6 +125,7 @@ async def upload_file(*,
 
 @router.post('/job/file/preset')
 async def upload_preset_file(*,
+                             request: Request,
                              files: Optional[str] = Body(default=None, description='Preset Training File List'),
                              name: Optional[str] = Body(description='Dataset Name'),
                              qa_list: Optional[list[int]] = Body(default=None,
@@ -136,17 +141,33 @@ async def upload_preset_file(*,
         qa_knowledge_db = await KnowledgeDao.aget_list_by_ids(qa_list)
         qa_knowledge_db_ids = [qa_knowledge.id for qa_knowledge in qa_knowledge_db]
         qa_db_list = await QAKnoweldgeDao.aget_qa_knowledge_by_knowledge_ids(qa_knowledge_db_ids)
-        qa_list = []
+        qa_data = []
         for qa in qa_db_list:
-            qa_list.extend([{
+            qa_data.extend([{
                 'instruction': question,
                 'input': '',
                 'output': json.loads(qa.answers)[0]
             } for question in qa.questions])
-        with tempfile.NamedTemporaryFile(mode='w+', suffix='.json') as filepath:
-            json.dump(qa_list, filepath, ensure_ascii=False, indent=2)
-            filepath.seek(0)
-            ret = await FinetuneFileService.upload_preset_file(name, 1, filepath.name, login_user)
+        # Use mkstemp instead of NamedTemporaryFile to avoid Windows file-lock issue:
+        # NamedTemporaryFile keeps the file open, and fput_object (running in a thread)
+        # cannot re-open it on Windows (PermissionError).
+        tmp_path = None
+        try:
+            fd, tmp_path = tempfile.mkstemp(suffix='.json')
+            with os.fdopen(fd, 'w', encoding='utf-8') as f:
+                json.dump(qa_data, f, ensure_ascii=False, indent=2)
+            ret = await FinetuneFileService.upload_preset_file(name, 1, tmp_path, login_user)
+        finally:
+            if tmp_path and os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+
+    # Audit log
+    if ret:
+        user_group = await UserGroupDao.aget_user_group(login_user.user_id)
+        group_ids = [one.group_id for one in user_group]
+        await AuditLogService.create_dataset(
+            login_user, get_request_ip(request), str(ret.id), ret.name, group_ids)
+
     return resp_200(ret)
 
 
@@ -169,24 +190,56 @@ async def get_preset_file_records(*, file_id: str,
 
 
 @router.put('/job/file/preset/{file_id}/records')
-async def update_preset_file_records(*, file_id: str,
+async def update_preset_file_records(*, request: Request, file_id: str,
                                      records: list[dict] = Body(...),
                                      login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
     ret = await FinetuneFileService.save_file_records(file_id, records)
+
+    # Audit log
+    from bisheng.finetune.domain.models.preset_train import PresetTrainDao
+    file_data = await PresetTrainDao.find_one(file_id)
+    if file_data:
+        user_group = await UserGroupDao.aget_user_group(login_user.user_id)
+        group_ids = [one.group_id for one in user_group]
+        await AuditLogService.update_dataset(
+            login_user, get_request_ip(request), file_id, file_data.name, group_ids)
+
     return resp_200(data={'records': ret})
 
 
 @router.post('/job/file/preset/{file_id}/clean')
-async def clean_preset_file_records(*, file_id: str,
+async def clean_preset_file_records(*, request: Request, file_id: str,
                                     options: dict = Body(default={}),
                                     login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
     ret = await FinetuneFileService.clean_file_records(file_id, options, login_user.user_id)
+
+    # Audit log
+    from bisheng.finetune.domain.models.preset_train import PresetTrainDao
+    file_data = await PresetTrainDao.find_one(file_id)
+    if file_data:
+        user_group = await UserGroupDao.aget_user_group(login_user.user_id)
+        group_ids = [one.group_id for one in user_group]
+        await AuditLogService.update_dataset(
+            login_user, get_request_ip(request), file_id, file_data.name, group_ids)
+
     return resp_200(data=ret)
 
 @router.delete('/job/file/preset')
-async def delete_preset_file(*, file_id: str, login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
-    # get login user
+async def delete_preset_file(*, request: Request, file_id: str,
+                             login_user: UserPayload = Depends(UserPayload.get_tenant_admin_user)):
+    # Get file info before deletion for audit log
+    from bisheng.finetune.domain.models.preset_train import PresetTrainDao
+    file_data = await PresetTrainDao.find_one(file_id)
+
     await FinetuneFileService.delete_preset_file(file_id, login_user)
+
+    # Audit log
+    if file_data:
+        user_group = await UserGroupDao.aget_user_group(login_user.user_id)
+        group_ids = [one.group_id for one in user_group]
+        await AuditLogService.delete_dataset(
+            login_user, get_request_ip(request), file_id, file_data.name, group_ids)
+
     return resp_200()
 
 

@@ -216,10 +216,13 @@ class InputNode(BaseNode):
             active = {ParseModeEnum.INGEST_TO_KNOWLEDGE_BASE.value}
         return active, ParseModeEnum.KEEP_RAW.value in active
 
-    def _parse_upload_file_variables(self, key_info: dict, key_value: dict) -> dict:
+    def _parse_upload_file_variables(self, key_info: dict, key_value: dict, unique_key: str = None) -> dict:
         """
         parse upload_file variables
         Documented metadataData, full-text files, minio file paths, image files path
+
+        For form_input with multiple file fields, each field gets unique output variable names
+        by prefixing with the unique_key to avoid conflicts.
         """
         # Compatible processing of historical versions of nodes
         if self.node_data.v <= self._current_v:
@@ -235,17 +238,26 @@ class InputNode(BaseNode):
         #   - key (temp KB): when the strategy ingests (ingest_to_temp_kb active)
         active, _ = self._active_modes(key_info.get("file_parse_mode"))
         ret = {}
+
+        # For form_input, prefix variable names with unique_key to ensure uniqueness
+        # when multiple file fields exist in the same Input node
+        prefix = f"{unique_key}_" if unique_key and not self.is_dialog_input() else ""
+
         # raw file path — always exposed
-        ret[key_info["file_path"]] = key_value.get(key_info["file_path"], [])
+        var_name = f"{prefix}{key_info['file_path']}"
+        ret[var_name] = key_value.get(key_info["file_path"], [])
         # image variable — driven by upload type only, not by the strategy
         if self._accepts_image(key_info.get("file_type")):
-            ret[key_info["image_file"]] = key_value.get(key_info["image_file"], [])
+            var_name = f"{prefix}{key_info['image_file']}"
+            ret[var_name] = key_value.get(key_info["image_file"], [])
         # parsed content — when the strategy parses
         if ParseModeEnum.EXTRACT_TEXT.value in active:
-            ret[key_info["file_content"]] = key_value.get(key_info["file_content"], "")
+            var_name = f"{prefix}{key_info['file_content']}"
+            ret[var_name] = key_value.get(key_info["file_content"], "")
         # temp knowledge base key — when the strategy ingests
+        # No prefix: frontend (SelectVar/InputFormItem) exposes this as bare item.key
         if ParseModeEnum.INGEST_TO_KNOWLEDGE_BASE.value in active:
-            ret[key_info["key"]] = key_value.get(key_info["key"], [])
+            ret[key_info['key']] = key_value.get(key_info["key"], [])
         return ret
 
     def _run(self, unique_id: str):
@@ -280,7 +292,10 @@ class InputNode(BaseNode):
             label, _ = self.parse_msg_with_variables(key_info.get("value")) if key_info.get("value") else key
             if key_info["type"] == "file":
                 new_params = self.parse_upload_file(key, key_info, value)
-                ret.update(self._parse_upload_file_variables(key_info, new_params))
+                # Use the original stable key (key_info["key"]) as prefix,
+                # NOT the runtime UUID key, so output variable names match
+                # what the frontend configured and downstream nodes reference.
+                ret.update(self._parse_upload_file_variables(key_info, new_params, unique_key=key_info["key"]))
 
                 if new_params[key_info["key"]]:
                     content = ""
