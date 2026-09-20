@@ -13,7 +13,10 @@ export interface LocalModelMetrics {
   /** Lower is better. */
   evalLoss: number;
   /** Higher is better. */
-  bleu: number;
+  bleu_4: number;
+  rouge_1: number;
+  rouge_2: number;
+  rouge_l: number;
 }
 
 export interface LocalModelRecord {

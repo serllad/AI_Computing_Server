@@ -45,7 +45,6 @@ export async function getModulesApi(): Promise<{ data: any[] }> {
             { name: 'log.systemIdEnum.tenant', value: 'tenant' },
             { name: 'log.systemIdEnum.llm', value: 'llm' },
             { name: 'log.systemIdEnum.approval', value: 'approval' },
-            { name: 'log.systemIdEnum.dataset', value: 'dataset' },
         ],
 
     }
@@ -106,10 +105,6 @@ const actions = [
     { name: 'log.eventTypeEnum.approvalScenarioToggle', value: 'approval.scenario.toggle' },
     { name: 'log.eventTypeEnum.approvalScenarioCreate', value: 'approval.scenario.create' },
     { name: 'log.eventTypeEnum.approvalMenuAccessRevokeGrant', value: 'approval.menu_access.revoke_grant' },
-    { name: 'log.eventTypeEnum.create_dataset', value: 'create_dataset' },
-    { name: 'log.eventTypeEnum.update_dataset', value: 'update_dataset' },
-    { name: 'log.eventTypeEnum.delete_dataset', value: 'delete_dataset' },
-    { name: 'log.eventTypeEnum.upload_dataset', value: 'upload_dataset' },
 ];
 
 // 全部操作行为
@@ -130,7 +125,6 @@ export async function getActionsByModuleApi(moduleId) {
         case 'tenant': return actions.filter(a => a.value.startsWith('tenant.'))
         case 'llm': return actions.filter(a => a.value.startsWith('llm.server.'))
         case 'approval': return actions.filter(a => a.value.startsWith('approval.'))
-        case 'dataset': return actions.filter(a => a.value.includes('dataset'))
     }
 }
 

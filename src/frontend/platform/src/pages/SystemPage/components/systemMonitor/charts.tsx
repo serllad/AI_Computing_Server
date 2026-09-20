@@ -1,3 +1,46 @@
+interface SparklineProps {
+  values: number[];
+  color: string;
+  width?: number;
+  height?: number;
+}
+
+export function Sparkline({ values, color, width = 86, height = 32 }: SparklineProps) {
+  if (values.length < 2) return null;
+
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const low = min === max ? min - 1 : min;
+  const high = min === max ? max + 1 : max;
+  const points = values.map((value, index) => ({
+    x: (index / (values.length - 1)) * width,
+    y: height - 4 - ((value - low) / (high - low)) * (height - 8),
+  }));
+
+  const line = points
+    .map((point, index) => `${index ? "L" : "M"}${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+    .join(" ");
+  const area = `M0 ${height} L${points
+    .map((point) => `${point.x.toFixed(1)} ${point.y.toFixed(1)}`)
+    .join(" L")} L${width} ${height} Z`;
+  const gradientId = `spark-${color.replace("#", "")}`;
+  const last = points[points.length - 1];
+
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`}>
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={color} stopOpacity={0.35} />
+          <stop offset="1" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
+      <path d={area} fill={`url(#${gradientId})`} />
+      <path d={line} fill="none" stroke={color} strokeWidth={1.4} />
+      <circle cx={last.x} cy={last.y} r={2.2} fill={color} />
+    </svg>
+  );
+}
+
 interface DonutSlice {
   count: number;
   color: string;
@@ -79,12 +122,12 @@ export function TrendChart({ util, vmem }: TrendChartProps) {
           y1={y(value)}
           x2={width - padRight}
           y2={y(value)}
-          stroke="rgba(148,163,184,0.25)"
+          stroke="rgba(0,190,255,0.12)"
           strokeWidth={1}
         />
       ))}
       {[0, 25, 50, 75, 100].map((value) => (
-        <text key={value} x={2} y={y(value) + 3} fill="#94a3b8" fontSize={9}>
+        <text key={value} x={2} y={y(value) + 3} fill="#4f7fae" fontSize={9}>
           {value}
         </text>
       ))}
@@ -92,20 +135,20 @@ export function TrendChart({ util, vmem }: TrendChartProps) {
         <>
           <defs>
             <linearGradient id="gUtil" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#2563eb" stopOpacity={0.28} />
-              <stop offset="1" stopColor="#2563eb" stopOpacity={0.02} />
+              <stop offset="0" stopColor="#00d9ff" stopOpacity={0.3} />
+              <stop offset="1" stopColor="#00d9ff" stopOpacity={0.02} />
             </linearGradient>
             <linearGradient id="gVmem" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="#7c3aed" stopOpacity={0.16} />
-              <stop offset="1" stopColor="#7c3aed" stopOpacity={0} />
+              <stop offset="0" stopColor="#9a6bff" stopOpacity={0.18} />
+              <stop offset="1" stopColor="#9a6bff" stopOpacity={0} />
             </linearGradient>
           </defs>
           <path d={areaPath(util)} fill="url(#gUtil)" />
-          <path d={linePath(vmem)} fill="none" stroke="#7c3aed" strokeWidth={1.6} opacity={0.85} />
-          <path d={linePath(util)} fill="none" stroke="#2563eb" strokeWidth={2} />
+          <path d={linePath(vmem)} fill="none" stroke="#9a6bff" strokeWidth={1.6} opacity={0.85} />
+          <path d={linePath(util)} fill="none" stroke="#00d9ff" strokeWidth={2} />
           <circle cx={x(lastIndex)} cy={y(util[lastIndex])} r={3} fill="#fff" />
-          <circle cx={x(lastIndex)} cy={y(util[lastIndex])} r={6} fill="none" stroke="#2563eb" opacity={0.5} />
-          <circle cx={x(lastIndex)} cy={y(vmem[lastIndex])} r={2.6} fill="#7c3aed" />
+          <circle cx={x(lastIndex)} cy={y(util[lastIndex])} r={6} fill="none" stroke="#00d9ff" opacity={0.5} />
+          <circle cx={x(lastIndex)} cy={y(vmem[lastIndex])} r={2.6} fill="#9a6bff" />
         </>
       )}
     </svg>

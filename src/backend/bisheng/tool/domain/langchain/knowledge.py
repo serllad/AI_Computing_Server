@@ -1,7 +1,4 @@
-import time
 from typing import Any
-
-from loguru import logger
 
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.documents import BaseDocumentCompressor, Document
@@ -49,56 +46,28 @@ class KnowledgeRetrieverTool(BaseTool):
 
     def _run(self, query: str, **kwargs: Any) -> list[Document]:
         milvus_docs, es_docs = [], []
-        milvus_cost = es_cost = rrf_cost = rerank_cost = 0.0
         if self.vector_retriever:
-            start = time.perf_counter()
             milvus_docs = self.vector_retriever.invoke(query)
-            milvus_cost = time.perf_counter() - start
         if self.elastic_retriever:
-            start = time.perf_counter()
             es_docs = self.elastic_retriever.invoke(query)
-            es_cost = time.perf_counter() - start
 
-        start = time.perf_counter()
         finally_docs = self._rrf_rerank(milvus_docs, es_docs, query)
-        rrf_cost = time.perf_counter() - start
 
         if self.rerank:
-            start = time.perf_counter()
             finally_docs = self.rerank.compress_documents(finally_docs, query)
-            rerank_cost = time.perf_counter() - start
-
-        logger.info(
-            "knowledge_retrieve_cost query_len={} milvus={:.3f}s es={:.3f}s rrf={:.3f}s rerank={:.3f}s milvus_docs={} es_docs={}",
-            len(query), milvus_cost, es_cost, rrf_cost, rerank_cost, len(milvus_docs), len(es_docs),
-        )
         return finally_docs
 
     async def _arun(self, query: str, **kwargs: Any) -> list[Document]:
         milvus_docs, es_docs = [], []
-        milvus_cost = es_cost = rrf_cost = rerank_cost = 0.0
         if self.vector_retriever:
-            start = time.perf_counter()
             milvus_docs = await self.vector_retriever.ainvoke(query)
-            milvus_cost = time.perf_counter() - start
         if self.elastic_retriever:
-            start = time.perf_counter()
             es_docs = await self.elastic_retriever.ainvoke(query)
-            es_cost = time.perf_counter() - start
 
-        start = time.perf_counter()
         finally_docs = self._rrf_rerank(milvus_docs, es_docs, query)
-        rrf_cost = time.perf_counter() - start
 
         if self.rerank:
-            start = time.perf_counter()
             finally_docs = await self.rerank.acompress_documents(finally_docs, query)
-            rerank_cost = time.perf_counter() - start
-
-        logger.info(
-            "knowledge_retrieve_cost query_len={} milvus={:.3f}s es={:.3f}s rrf={:.3f}s rerank={:.3f}s milvus_docs={} es_docs={}",
-            len(query), milvus_cost, es_cost, rrf_cost, rerank_cost, len(milvus_docs), len(es_docs),
-        )
         return finally_docs
 
     def _rrf_rerank(self, milvus_docs: list[Document], es_docs: list[Document], query: str) -> list[Document]:

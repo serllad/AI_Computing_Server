@@ -2,7 +2,7 @@ services:
   mysql:
     container_name: bisheng-mysql
     image: mysql:8.0
-    
+
     ports:
       - "3306:3306"
     environment:
@@ -86,7 +86,8 @@ services:
 
   backend:
     container_name: bisheng-backend
-    image: dataelement/bisheng-backend:v3.0.0-beta1
+    #image: dataelement/bisheng-backend:v3.0.0-beta1
+    image: dataelement/bisheng-backend:latest
     ports:
       - "7860:7860"
     environment:
@@ -104,16 +105,17 @@ services:
       BS_MINIO_ACCESS_KEY: 'minioadmin'
       BS_MINIO_SECRET_KEY: 'minioadmin'
       # ===== 新增代理配置 =====
-      HTTP_PROXY: "http://host.docker.internal:7890"
-      HTTPS_PROXY: "http://host.docker.internal:7890"
-      http_proxy: "http://host.docker.internal:7890"
-      https_proxy: "http://host.docker.internal:7890"
-      NO_PROXY: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
-      no_proxy: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
+      #HTTP_PROXY: "http://host.docker.internal:7890"
+      #HTTPS_PROXY: "http://host.docker.internal:7890"
+      #http_proxy: "http://host.docker.internal:7890"
+      #https_proxy: "http://host.docker.internal:7890"
+      #NO_PROXY: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
+      #no_proxy: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/config/config.yaml:/app/bisheng/config.yaml
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/entrypoint.sh:/app/entrypoint.sh
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/bisheng:/app/data
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/llm:/opt/bisheng-ft/models/model_repository  # 共享模型权重目录
     security_opt:
       - seccomp:unconfined
     command: sh entrypoint.sh api
@@ -134,7 +136,8 @@ services:
 
   backend_worker:
     container_name: bisheng-backend-worker
-    image: dataelement/bisheng-backend:v3.0.0-beta1
+    #image: dataelement/bisheng-backend:v3.0.0-beta1
+    image: dataelement/bisheng-backend:latest
     environment:
       TZ: Asia/Shanghai
       BS_SSO_SYNC__GATEWAY_HMAC_SECRET: "bisheng-local-hmac-20260422"
@@ -150,16 +153,17 @@ services:
       BS_MINIO_ACCESS_KEY: 'minioadmin'
       BS_MINIO_SECRET_KEY: 'minioadmin'
       # ===== 新增代理配置 =====
-      HTTP_PROXY: "http://host.docker.internal:7890"
-      HTTPS_PROXY: "http://host.docker.internal:7890"
-      http_proxy: "http://host.docker.internal:7890"
-      https_proxy: "http://host.docker.internal:7890"
-      NO_PROXY: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
-      no_proxy: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
+      #HTTP_PROXY: "http://host.docker.internal:7890"
+      #HTTPS_PROXY: "http://host.docker.internal:7890"
+      #http_proxy: "http://host.docker.internal:7890"
+      #https_proxy: "http://host.docker.internal:7890"
+      #NO_PROXY: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
+      #no_proxy: "localhost,127.0.0.1,mysql,redis,openfga,milvus,minio,elasticsearch,etcd,host.docker.internal"
     volumes:
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/config/config.yaml:/app/bisheng/config.yaml
       - ${DOCKER_VOLUME_DIRECTORY:-.}/bisheng/entrypoint.sh:/app/entrypoint.sh
       - ${DOCKER_VOLUME_DIRECTORY:-.}/data/bisheng:/app/data
+      - ${DOCKER_VOLUME_DIRECTORY:-.}/data/llm:/opt/bisheng-ft/models/model_repository  # 共享模型权重目录
     security_opt:
       - seccomp:unconfined
     command: sh entrypoint.sh worker
@@ -174,7 +178,8 @@ services:
 
   frontend:
     container_name: bisheng-frontend
-    image: dataelement/bisheng-frontend:v3.0.0-beta1
+    #image: dataelement/bisheng-frontend:v3.0.0-beta1
+    image: dataelement/bisheng-frontend:latest
     ports:
       - "3001:3001"
     environment:
@@ -189,7 +194,6 @@ services:
   elasticsearch:
     container_name: bisheng-es
     image: docker.io/bitnamilegacy/elasticsearch:8.12.0
-    user: root
     ports:
       - "9200:9200"
       - "9300:9300"

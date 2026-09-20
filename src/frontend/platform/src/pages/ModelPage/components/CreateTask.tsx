@@ -34,6 +34,18 @@ export default function CreateTask({ rtClick, gpuClick, onCancel, onCreate }) {
         { name: 'num_train_epochs', value: '3', desc: t('finetune.numEpochsDesc') },
         { name: 'max_seq_len', value: '8192', desc: t('finetune.maxSeqLenDesc') },
         { name: 'cpu_load', value: 'false', desc: t('finetune.cpuLoadDesc') },
+        // 优化与正则化
+        { name: 'optimizer', value: 'adamw_torch', desc: t('finetune.optimizerDesc') },
+        { name: 'max_grad_norm', value: '1.0', desc: t('finetune.maxGradNormDesc') },
+        { name: 'weight_decay', value: '0.0', desc: t('finetune.weightDecayDesc') },
+        // 学习率调度
+        { name: 'lr_scheduler_type', value: 'cosine', desc: t('finetune.lrSchedulerDesc') },
+        { name: 'warmup_steps', value: '0', desc: t('finetune.warmupStepsDesc') },
+        // 梯度累积
+        { name: 'gradient_accumulation_steps', value: '4', desc: t('finetune.gradientAccumulationDesc') },
+        // QLoRA
+        { name: 'quantization_bit', value: '', desc: t('finetune.quantizationBitDesc') },
+        { name: 'quantization_type', value: 'nf4', desc: t('finetune.quantizationTypeDesc') },
     ]
 
     const [table] = useState(defaultTable)

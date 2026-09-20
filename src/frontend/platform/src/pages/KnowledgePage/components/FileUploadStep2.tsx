@@ -11,8 +11,6 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import useKnowledgeStore from "../useKnowledgeStore";
 import PreviewResult from "./PreviewResult";
-import { useModel } from "../../ModelPage/manage";
-import { ModelSelect } from "../../ModelPage/manage/tabs/WorkbenchModel";
 import RuleFile from "./RuleFile";
 import RuleTable from "./RuleTable";
 
@@ -70,7 +68,6 @@ const FileUploadStep2 = forwardRef(({
     const [applyRule, setApplyRule] = useState<any>({});
     const applyRuleRef = useRef(applyRule);
     const { id: kid } = useParams();
-    const { embeddings } = useModel();
     const { t } = useTranslation('knowledge');
     const setSelectedChunkIndex = useKnowledgeStore((state) => state.setSelectedChunkIndex);
     const splitRule = resultFiles[0]?.split_rule;
@@ -272,24 +269,6 @@ const FileUploadStep2 = forwardRef(({
                 )}>
                     {displayStep === 2 && (
                         <div className="min-w-0 min-h-0 h-full overflow-y-auto pb-28 pr-1">
-                            <div className="mb-4 max-w-sm">
-
-                                <ModelSelect
-
-                                    label={t('embeddingModel')}
-
-                                    value={rules.embeddingModelId}
-
-                                    options={embeddings}
-
-                                    onChange={(modelId) => setRules(prev => ({ ...prev, embeddingModelId: modelId || '' }))}
-
-                                    placeholder={t('useDefaultEmbedding')}
-
-                                />
-
-                            </div>
-
                             <TabsContent value="file" className="mt-0">
                                 <RuleFile
                                     rules={rules}
@@ -408,7 +387,6 @@ const useFileProcessingRules = (
             splitMode: parsedSplitRule?.split_mode ?? "auto",
             hierarchyLevel: parsedSplitRule?.hierarchy_level?.toString() || "3",
             appendTitle: parsedSplitRule?.append_title ?? false,
-              embeddingModelId: parsedSplitRule?.embedding_model_id || '',
             maxChunkSize: parsedSplitRule?.max_chunk_size?.toString() || "1000",
         };
     });

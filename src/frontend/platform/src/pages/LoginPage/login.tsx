@@ -1,7 +1,10 @@
 // @ts-strict-ignore
+import { BookOpenIcon } from '@/components/bs-icons/bookOpen';
+import { GithubIcon } from '@/components/bs-icons/github';
 import { LoadingIcon } from '@/components/bs-icons/loading';
 import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from 'react-i18next';
+import json from "../../../package.json";
 import { Button } from "../../components/bs-ui/button";
 import { Input } from "../../components/bs-ui/input";
 // import { alertContext } from "../contexts/alertContext";
@@ -348,6 +351,17 @@ export const LoginPage = ({ forceLocal = false }: LoginPageProps) => {
                                 </>
                         }
                         {appConfig.isPro && <LoginBridge oauthData={oauthData} onHasLdap={setHasLdap} />}
+                    </div>
+                    <div className=" absolute right-[16px] bottom-[16px] flex">
+                        <span className="mr-4 text-sm text-gray-400 relative top-2">v{json.version}</span>
+                        {!appConfig.noFace && <div className='help flex'>
+                            <a href={"https://github.com/dataelement/bisheng"} target="_blank">
+                                <GithubIcon className="block h-[40px] w-[40px] gap-1 border p-[10px] rounded-[8px] mx-[8px] hover:bg-[#1b1f23] hover:text-[white] hover:cursor-pointer" />
+                            </a>
+                            <a href={"https://m7a7tqsztt.feishu.cn/wiki/ZxW6wZyAJicX4WkG0NqcWsbynde"} target="_blank">
+                                <BookOpenIcon className="block h-[40px] w-[40px] gap-1 border p-[10px] rounded-[8px]  hover:bg-[#0055e3] hover:text-[white] hover:cursor-pointer" />
+                            </a>
+                        </div>}
                     </div>
                 </div>
             </div>

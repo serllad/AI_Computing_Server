@@ -15,6 +15,7 @@ import { useEffect, useMemo, useState, type MouseEvent as ReactMouseEvent } from
 import { useTranslation } from "react-i18next";
 import { SourceBadge, StatusBadge } from "./LocalModelBadges";
 import type { LocalModelRecord } from "./localModelData";
+import { getLocalModelDetailApi } from "@/controllers/API/localModel";
 
 interface InfoRowProps {
   label: string;
@@ -30,8 +31,8 @@ function InfoRow({ label, value }: InfoRowProps) {
   );
 }
 
-function formatMetric(value: number | undefined): string {
-  return value === undefined ? "--" : value.toFixed(2);
+function formatMetric(value: number | undefined | null): string {
+  return value == null ? "--" : value.toFixed(2);
 }
 
 export interface LocalModelDetailsProps {
@@ -54,13 +55,22 @@ export function LocalModelDetails({
   const { t } = useTranslation("model");
   const [compareWithId, setCompareWithId] = useState<string | null>(null);
   const [menuId, setMenuId] = useState<string | null>(null);
+  const [detailExtra, setDetailExtra] = useState<{ trainData?: any[]; presetData?: any[] } | null>(null);
 
   useEffect(() => {
     if (!open) {
       setCompareWithId(null);
       setMenuId(null);
+      setDetailExtra(null);
+    } else if (model?.source === "finetuned" && model?.id) {
+      getLocalModelDetailApi(model.id).then((res) => {
+        const m = res?.model;
+        if (m) {
+          setDetailExtra({ trainData: m.train_data, presetData: m.preset_data });
+        }
+      }).catch(() => {});
     }
-  }, [open]);
+  }, [open, model?.id, model?.source]);
 
   const lineage = useMemo(() => {
     if (!model) return [];
@@ -133,6 +143,30 @@ export function LocalModelDetails({
                     {t("model.localRepoPage.trainingDataset")}
                   </div>
                   <div className="mt-2 text-sm text-muted-foreground">{model.dataset ?? "--"}</div>
+                  {detailExtra?.trainData && detailExtra.trainData.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {detailExtra.trainData.map((f: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="truncate">{f.name ?? f.url ?? `文件 ${i + 1}`}</span>
+                          {f.num != null && f.num > 0 && (
+                            <span className="shrink-0 rounded bg-muted px-1.5 py-0.5">{f.num} 条</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {detailExtra?.presetData && detailExtra.presetData.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      {detailExtra.presetData.map((f: any, i: number) => (
+                        <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="truncate">{f.name ?? f.url ?? `预置数据 ${i + 1}`}</span>
+                          {f.num != null && f.num > 0 && (
+                            <span className="shrink-0 rounded bg-muted px-1.5 py-0.5">{f.num} 条</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="mt-4 text-sm font-medium">
                     {t("model.localRepoPage.hyperparameters")}
                   </div>
@@ -156,8 +190,20 @@ export function LocalModelDetails({
                       <span className="font-medium">{formatMetric(model.metrics?.evalLoss)}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">{t("model.localRepoPage.bleu")}</span>
-                      <span className="font-medium">{formatMetric(model.metrics?.bleu)}</span>
+                      <span className="text-muted-foreground">BLEU-4</span>
+                      <span className="font-medium">{formatMetric(model.metrics?.bleu_4)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">ROUGE-1</span>
+                      <span className="font-medium">{formatMetric(model.metrics?.rouge_1)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">ROUGE-2</span>
+                      <span className="font-medium">{formatMetric(model.metrics?.rouge_2)}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">ROUGE-L</span>
+                      <span className="font-medium">{formatMetric(model.metrics?.rouge_l)}</span>
                     </div>
                   </div>
                 </div>
@@ -249,8 +295,20 @@ export function LocalModelDetails({
                   <span>{formatMetric(compareTarget?.metrics?.evalLoss)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("model.localRepoPage.bleu")}</span>
-                  <span>{formatMetric(compareTarget?.metrics?.bleu)}</span>
+                  <span className="text-muted-foreground">BLEU-4</span>
+                  <span>{formatMetric(compareTarget?.metrics?.bleu_4)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">ROUGE-1</span>
+                  <span>{formatMetric(compareTarget?.metrics?.rouge_1)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">ROUGE-2</span>
+                  <span>{formatMetric(compareTarget?.metrics?.rouge_2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">ROUGE-L</span>
+                  <span>{formatMetric(compareTarget?.metrics?.rouge_l)}</span>
                 </div>
               </div>
             </div>
@@ -265,8 +323,20 @@ export function LocalModelDetails({
                   <span>{formatMetric(model.metrics?.evalLoss)}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">{t("model.localRepoPage.bleu")}</span>
-                  <span>{formatMetric(model.metrics?.bleu)}</span>
+                  <span className="text-muted-foreground">BLEU-4</span>
+                  <span>{formatMetric(model.metrics?.bleu_4)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">ROUGE-1</span>
+                  <span>{formatMetric(model.metrics?.rouge_1)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">ROUGE-2</span>
+                  <span>{formatMetric(model.metrics?.rouge_2)}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">ROUGE-L</span>
+                  <span>{formatMetric(model.metrics?.rouge_l)}</span>
                 </div>
               </div>
             </div>

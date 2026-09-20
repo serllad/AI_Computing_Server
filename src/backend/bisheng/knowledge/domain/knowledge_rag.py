@@ -216,16 +216,6 @@ class KnowledgeRag:
         knowledge = cls._get_knowledge_sync(knowledge, knowledge_id)
         return cls.init_es_vectorstore_sync(knowledge.index_name, **kwargs)
 
-    @staticmethod
-    def _try_load_collection(vectorstore) -> None:
-        """Best-effort load a Milvus collection into memory for fast search."""
-        try:
-            col = getattr(vectorstore, "col", None)
-            if col is not None:
-                col.load()
-        except Exception:
-            logger.debug("milvus_collection_load_skipped")
-
     @classmethod
     def get_multi_knowledge_vectorstore_sync(
         cls,
@@ -266,8 +256,6 @@ class KnowledgeRag:
             }
             if include_milvus:
                 vectorstore = cls.init_knowledge_milvus_vectorstore_sync(invoke_user_id, knowledge)
-
-                cls._try_load_collection(vectorstore)
                 ret[knowledge.id]["milvus"] = vectorstore
             if include_es:
                 es_vectorstore = cls.init_knowledge_es_vectorstore_sync(knowledge)
@@ -317,8 +305,6 @@ class KnowledgeRag:
             }
             if include_milvus:
                 vectorstore = await cls.init_knowledge_milvus_vectorstore(invoke_user_id, knowledge)
-
-                cls._try_load_collection(vectorstore)
                 ret[knowledge.id]["milvus"] = vectorstore
             if include_es:
                 es_vectorstore = await cls.init_knowledge_es_vectorstore(knowledge)

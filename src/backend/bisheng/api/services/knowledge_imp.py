@@ -8,7 +8,6 @@ import requests
 from langchain_classic.schema.document import Document
 from langchain_classic.text_splitter import CharacterTextSplitter
 from loguru import logger
-from pymilvus import DataType
 from sqlalchemy import func, or_
 from sqlmodel import select
 
@@ -42,9 +41,6 @@ from bisheng.knowledge.domain.models.knowledge_file import (
     QAStatus,
 )
 from bisheng.knowledge.domain.schemas.knowledge_rag_schema import QAKnowledgeMetadata
-from bisheng.knowledge.domain.services.knowledge_chunk_auto_tag_service import (
-    KnowledgeChunkAutoTagService,
-)
 from bisheng.knowledge.domain.services.knowledge_space_auto_tag_service import KnowledgeSpaceAutoTagService
 from bisheng.knowledge.domain.services.knowledge_utils import KnowledgeUtils
 from bisheng.knowledge.rag.knowledge_file_pipeline import KnowledgeFilePipeline
@@ -182,30 +178,6 @@ def delete_knowledge_file_vectors(file_ids: list[int], clear_minio: bool = True)
     return True
 
 
-def _get_milvus_collection_dim(vector_client) -> int | None:
-    """Read the float-vector dimension from an existing Milvus collection."""
-    try:
-        for field in vector_client.col.schema.fields:
-            if getattr(field, "dtype", None) == DataType.FLOAT_VECTOR:
-                dim = (getattr(field, "params", {}) or {}).get("dim")
-                if dim:
-                    return int(dim)
-    except Exception:
-        logger.exception("read_milvus_collection_dim_failed")
-    return None
-
-
-def _probe_embedding_dim(embeddings) -> int | None:
-    """Return the embedding dimension produced by an embedding model."""
-    try:
-        vectors = embeddings.embed_documents(["dimension_probe"])
-        if vectors and vectors[0]:
-            return len(vectors[0])
-    except Exception:
-        logger.exception("probe_embedding_dim_failed")
-    return None
-
-
 def addEmbedding(
     knowledge_id: int,
     knowledge_files: list[KnowledgeFile],
@@ -217,52 +189,14 @@ def addEmbedding(
 
     knowledge_info = KnowledgeDao.query_by_id(knowledge_id)
     logger.info("start init Milvus")
-
-    # Allow a per-upload embedding model override stored in the file split rule.
-    # Falls back to the knowledge base default model when not specified.
-    embeddings = None
-    try:
-        split_rule = json.loads(knowledge_files[0].split_rule) if knowledge_files[0].split_rule else {}
-        embedding_model_id = split_rule.get("embedding_model_id")
-        if embedding_model_id:
-            embeddings = LLMService.get_bisheng_knowledge_embedding_sync(
-                invoke_user_id=knowledge_files[0].updater_id,
-                model_id=int(embedding_model_id),
-            )
-    except Exception:
-        logger.exception("resolve_upload_embedding_model_failed")
-
-    # Always ensure the Milvus collection exists using the knowledge-base default
-    # embedding first, so the collection dimension is pinned to the KB model. A
-    # per-upload override is only accepted when its dimension matches the collection.
     vector_client = KnowledgeRag.init_knowledge_milvus_vectorstore_sync(
-        knowledge_files[0].updater_id,
-        knowledge=knowledge_info,
-        metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA,
+        knowledge_files[0].updater_id, knowledge=knowledge_info, metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA
     )
     vector_client = KnowledgeUtils.ensure_milvus_schema_ready(
         invoke_user_id=knowledge_files[0].updater_id,
         knowledge=knowledge_info,
         vector_client=vector_client,
     )
-
-    if embeddings is not None:
-        collection_dim = _get_milvus_collection_dim(vector_client)
-        override_dim = _probe_embedding_dim(embeddings)
-        if override_dim and collection_dim and override_dim == collection_dim:
-            vector_client = KnowledgeRag.init_knowledge_milvus_vectorstore_sync(
-                knowledge_files[0].updater_id,
-                knowledge=knowledge_info,
-                metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA,
-                embeddings=embeddings,
-            )
-        else:
-            logger.warning(
-                "upload_embedding_dim_mismatch override_dim={} collection_dim={} fallback_to_default",
-                override_dim,
-                collection_dim,
-            )
-            embeddings = None
     logger.info("start init ES")
     es_client = KnowledgeRag.init_knowledge_es_vectorstore_sync(
         knowledge=knowledge_info, metadata_schemas=KNOWLEDGE_RAG_METADATA_SCHEMA
@@ -285,14 +219,6 @@ def addEmbedding(
             )
             pipeline_result = knowledge_file_pipeline.run()
             db_file.status = KnowledgeFileStatus.SUCCESS.value
-
-            # Auto-generate tags for every chunk after parsing completes.
-            KnowledgeChunkAutoTagService.apply_after_ingest(
-                knowledge=knowledge_info,
-                db_file=db_file,
-                documents=pipeline_result.documents,
-            )
-
 
             # TODO[plan-3-async]: trigger SimHash similar-scan after successful parse.
             # addEmbedding runs in a sync Celery worker; async scan is deferred to a

@@ -1238,8 +1238,7 @@
       "knowledge_space": "Knowledge Space",
       "tenant": "Tenant Management",
       "llm": "Model Management",
-      "approval": "Approval Management",
-      "dataset": "Dataset"
+      "approval": "Approval Management"
     },
     "eventTypeEnum": {
       "createChat": "Create Session",
@@ -1312,11 +1311,7 @@
       "approvalFlowUpdate": "Update Approval Flow",
       "approvalScenarioToggle": "Toggle Approval Scenario",
       "approvalScenarioCreate": "Create Approval Scenario",
-      "approvalMenuAccessRevokeGrant": "Revoke Menu Access Grant",
-      "create_dataset": "Create Dataset",
-      "update_dataset": "Update Dataset",
-      "delete_dataset": "Delete Dataset",
-      "upload_dataset": "Upload Dataset"
+      "approvalMenuAccessRevokeGrant": "Revoke Menu Access Grant"
     },
     "objectTypeEnum": {
       "none": "None",
@@ -1339,8 +1334,7 @@
       "approval_task": "Approval Task",
       "approval_exception": "Approval Exception",
       "approval_scenario": "Approval Scenario",
-      "approval_flow": "Approval Flow",
-      "dataset": "Dataset"
+      "approval_flow": "Approval Flow"
     },
     "appUsage": "App Usage",
     "systemOperations": "System Operations",
@@ -2143,9 +2137,9 @@
     "title": "System Monitoring",
     "headerTitle": "AI Compute Monitoring Center",
     "headerSub": "AI COMPUTE OBSERVABILITY · INTERACTIVE PROTOTYPE",
-    "clusterName": "ZC-01 · Ascend Training/Inference Cluster",
+    "clusterName": "ZC-01 · Training/Inference Mixed Cluster",
     "singleCluster": "Single-cluster mode",
-    "centerHint": "Unified Ascend management · Huawei Ascend 910B4",
+    "centerHint": "Unified heterogeneous accelerator management · Ascend / Hygon DCU / Muxi / Iluvatar",
     "live": "Live",
     "realtime": "Live",
     "sample": "Sampled {{time}}",
@@ -2236,7 +2230,7 @@
     "alerts": {
       "a1": "Node 10.20.1.21 average temperature is high, approaching 70°C",
       "a2": "Cluster ZC-01 scheduling policy switched to Fair Share",
-      "a3": "New node 10.20.1.12 (Ascend 910B4) registered successfully"
+      "a3": "New node 10.20.1.41 (Iluvatar BI-V150) registered successfully"
     },
     "alertsEmpty": "No alerts, cluster is healthy ✓",
     "alertsEmptyFilter": "No alerts at this level",
@@ -2244,9 +2238,9 @@
     "tasksSub": "SCHEDULER",
     "fairShare": "Fair Share",
     "taskState": {
-      "running": "In Progress",
-      "finished": "Finished",
-      "queued": "Waiting"
+      "running": "Running",
+      "migrating": "Migrating",
+      "queued": "Queued"
     },
     "tasks": {
       "t1": "LLaMA-3.1-70B distributed pre-training",
@@ -2255,8 +2249,8 @@
       "t4": "Ascend · code model full fine-tuning",
       "t5": "Ascend · vector retrieval inference service",
       "t6": "Ascend · RAG QA inference",
-      "t7": "Ascend · text-to-image inference",
-      "t8": "Ascend · video understanding inference",
+      "t7": "Muxi · text-to-image inference",
+      "t8": "Iluvatar · video understanding inference",
       "t9": "Scientific computing CFD batch job",
       "t10": "Ascend · offline batch translation"
     },
@@ -2283,7 +2277,7 @@
     },
     "status": {
       "on": "Healthy",
-      "finished": "Finished",
+      "migrating": "Migrating",
       "down": "Down"
     },
     "actions": {

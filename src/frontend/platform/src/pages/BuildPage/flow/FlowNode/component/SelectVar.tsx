@@ -45,28 +45,21 @@ const getSpecialVar = ({ obj, group, onlyImg = false }) => {
                 const isParse = modes.includes('extract_text');
                 const isIngest = modes.includes('ingest_to_temp_kb');
 
-                // For file type, prefix variable names with the unique key (item.key)
-                // to ensure uniqueness when multiple file fields exist in the same Input node
-                const prefix = item.key && item.type === 'file' ? `${item.key}_` : '';
-
-                const add = (propKey, usePrefix = false) => {
-                    const varName = usePrefix ? `${prefix}${item[propKey]}` : item[propKey];
-                    res.push({ label: varName, value: varName });
-                };
+                const add = (propKey) => res.push({ label: item[propKey], value: item[propKey] });
                 // 文本 / 下拉 use key
                 if (['select', 'text'].includes(item.type)) {
                     !onlyImg && add('key')
                     return res
                 }
-                // 图片变量：上传类型含图片即暴露(不看策略)
+                // 图片变量：上传类型含图片即暴露（不看策略）
                 if (isImageCapable && item.image_file) {
-                    add('image_file', true);
+                    add('image_file');
                 }
                 if (onlyImg) return res;
-                // 解析结果(解析时)/ 临时库名(入库时)/ 文件路径(恒暴露)
-                if (isParse && item.file_content) add('file_content', true);
+                // 解析结果（解析时）/ 临时库名（入库时）/ 文件路径（恒暴露）
+                if (isParse && item.file_content) add('file_content');
                 if (isIngest) add('key');
-                if (item.file_path) add('file_path', true);
+                if (item.file_path) add('file_path');
 
                 return res;
             }, []);
@@ -436,7 +429,7 @@ const SelectVar = forwardRef(({
         <SelectContent position="popper" avoidCollisions={false} className={align === 'left' ? "overflow-auto -translate-x-28" : 'overflow-auto'} >
             <div className="flex max-h-[360px] ">
                 {/* 三级级联菜单 */}
-                <div className="w-44 min-w-44 border-l first:border-none overflow-y-auto  scrollbar-hide">
+                <div className="w-36 min-w-36 border-l first:border-none overflow-y-auto  scrollbar-hide">
                     {nodeTemps.map(item =>
                         <div
                             className={`${select[0] === item.id && 'bg-[#EBF0FF]'} relative flex justify-between w-full select-none items-center rounded-sm p-1.5 text-sm outline-none cursor-pointer hover:bg-[#EBF0FF] data-[focus=true]:bg-[#EBF0FF] dark:hover:bg-gray-700 dark:data-[focus=true]:bg-gray-700 data-[disabled]:pointer-events-none data-[disabled]:opacity-50`}
@@ -449,12 +442,12 @@ const SelectVar = forwardRef(({
                         >
                             {onCheck && <Checkbox checked={checkKeys[item.id]} onCheckedChange={(bln) => handleCheckClick(bln, item.id)} className="mr-1" />}
                             {item.icon}
-                            <span className="w-36 overflow-hidden text-ellipsis ml-2">{item.name}</span>
+                            <span className="w-28 overflow-hidden text-ellipsis ml-2">{item.name}</span>
                             <ChevronRight className="size-4" />
                         </div>
                     )}
                 </div>
-                {!!vars.length && <div className="w-52 min-w-52 border-l first:border-none overflow-y-auto scrollbar-hide">
+                {!!vars.length && <div className="w-36 min-w-36 border-l first:border-none overflow-y-auto scrollbar-hide">
                     {vars.map(v =>
                         <div
                             className={`${select[1] === v.value && 'bg-[#EBF0FF]'} relative flex justify-between w-full select-none items-center rounded-sm p-1.5 text-sm outline-none cursor-pointer hover:bg-[#EBF0FF] data-[focus=true]:bg-[#EBF0FF] dark:hover:bg-gray-700 dark:data-[focus=true]:bg-gray-700 data-[disabled]:pointer-events-none data-[disabled]:opacity-50`}
@@ -473,9 +466,7 @@ const SelectVar = forwardRef(({
                                 onCheckedChange={(bln) => handleCheckClick(bln, currentMenuRef.current.id, v)}
                                 onClick={e => e.stopPropagation()}
                             />}
-                            <Tip content={v.label?.length > 14 ? v.label : ''} side={"top"}>
-                                <span className="w-48 overflow-hidden text-ellipsis whitespace-nowrap">{v.label}</span>
-                            </Tip>
+                            <span className="w-28 overflow-hidden text-ellipsis">{v.label}</span>
                             {v.param && <ChevronRight className="size-4" />}
                             {/* {value.includes(`${currentMenuRef.current.id}.${v.value}`) && <Check size={14} />} */}
                         </div>

@@ -372,7 +372,6 @@
     "manual": "Manually Created"
   },
   "knowledgeDesc": "Knowledge Base Description",
-  "useDefaultEmbedding": "Use knowledge base default model",
   "embeddingModel": "Knowledge Base Embedding Model Selection",
   "loadingModelList": "Loading model list...",
   "noAvailableModel": "No available models",
@@ -394,8 +393,6 @@
   "fileExists": "{{name1}} already exists as {{name2}}",
   "tags": "Tags",
   "addTag": "Add Tag",
-  "autoTag": "Auto Tag",
-  "autoTagging": "Tagging...",
   "editTag": "Edit Tag",
   "createTag": "Create tag",
   "deleteTag": "Delete Tag",

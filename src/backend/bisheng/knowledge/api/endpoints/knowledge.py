@@ -632,54 +632,6 @@ def delete_knowledge_chunk(
     return resp_200()
 
 
-@router.get("/chunk/tags", status_code=200)
-async def get_knowledge_chunk_tags(
-    request: Request,
-    login_user: UserPayload = Depends(UserPayload.get_login_user),
-    knowledge_id: int = Query(..., description="The knowledge base uponID"),
-    file_id: int = Query(..., description="Doc.ID"),
-    chunk_indexes: List[int] = Query(default=[], description="Chunked index numbers"),
-):
-    """Get tags attached to knowledge base chunks."""
-    tags = await KnowledgeService.get_chunk_tags(
-        login_user, knowledge_id, file_id, chunk_indexes
-    )
-    return resp_200(data=tags)
-
-
-@router.put("/chunk/tags", status_code=200)
-async def update_knowledge_chunk_tags(
-    request: Request,
-    login_user: UserPayload = Depends(UserPayload.get_login_user),
-    knowledge_id: int = Body(..., embed=True, description="The knowledge base uponID"),
-    file_id: int = Body(..., embed=True, description="Doc.ID"),
-    chunk_index: int = Body(..., embed=True, description="Chunked index number"),
-    tag_names: List[str] = Body(default=[], embed=True, description="Tag names to attach"),
-):
-    """Replace the tag set attached to a knowledge base chunk."""
-    tags = await KnowledgeService.update_chunk_tags(
-        login_user, knowledge_id, file_id, chunk_index, tag_names
-    )
-    return resp_200(data={"tags": tags})
-
-
-@router.post("/chunk/auto-tag", status_code=200)
-async def auto_tag_knowledge_chunk(
-    request: Request,
-    login_user: UserPayload = Depends(UserPayload.get_login_user),
-    knowledge_id: int = Body(..., embed=True, description="The knowledge base uponID"),
-    file_id: int = Body(..., embed=True, description="Doc.ID"),
-    chunk_index: int = Body(..., embed=True, description="Chunked index number"),
-    text: str = Body(default="", embed=True, description="Optional chunk text to tag"),
-    model_id: int = Body(default=None, embed=True, description="Optional LLM model id override"),
-):
-    """Generate tags for one knowledge base chunk with the configured LLM."""
-    tags = await KnowledgeService.auto_tag_chunk(
-        login_user, knowledge_id, file_id, chunk_index, text or None, model_id
-    )
-    return resp_200(data={"tags": tags})
-
-
 @router.get("/file_share")
 async def get_file_share_url(
     request: Request,

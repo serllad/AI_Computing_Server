@@ -709,45 +709,6 @@ export async function updateChunkApi(data: KnowledgePutRequest) {
 }
 
 /**
- * 获取知识库切片标签
- */
-export async function getKnowledgeChunkTagsApi(params: {
-    knowledge_id: number;
-    file_id: number;
-    chunk_indexes: number[];
-}): Promise<Record<number, string[]>> {
-    const queryStr = params.chunk_indexes.map((idx) => `chunk_indexes=${idx}`).join('&');
-    return await axios.get(
-        `/api/v1/knowledge/chunk/tags?knowledge_id=${params.knowledge_id}&file_id=${params.file_id}&${queryStr}`
-    );
-}
-
-/**
- * 更新知识库切片标签（全量替换）
- */
-export async function updateKnowledgeChunkTagsApi(data: {
-    knowledge_id: number;
-    file_id: number;
-    chunk_index: number;
-    tag_names: string[];
-}): Promise<{ tags: string[] }> {
-    return await axios.put(`/api/v1/knowledge/chunk/tags`, data);
-}
-
-/**
- * 自动生成知识库切片标签
- */
-export async function autoTagKnowledgeChunkApi(data: {
-    knowledge_id: number;
-    file_id: number;
-    chunk_index: number;
-    text?: string;
-    model_id?: number;
-}): Promise<{ tags: string[] }> {
-    return await axios.post(`/api/v1/knowledge/chunk/auto-tag`, data);
-}
-
-/**
  * 创建支持库
  */
 export async function createFileLib(data) {

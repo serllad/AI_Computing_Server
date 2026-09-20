@@ -194,8 +194,7 @@ export default function FilesUpload() {
       split_mode: _config.rules.splitMode,
       hierarchy_level: Number(_config.rules.hierarchyLevel),
       append_title: _config.rules.appendTitle,
-      max_chunk_size: Number(_config.rules.maxChunkSize),
-        embedding_model_id: _config.rules.embeddingModelId || undefined
+      max_chunk_size: Number(_config.rules.maxChunkSize)
     };
 
     captureAndAlertRequestErrorHoc(subUploadLibFile(apiConfig).then(res => {

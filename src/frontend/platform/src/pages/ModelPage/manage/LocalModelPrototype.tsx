@@ -1,8 +1,5 @@
 // Local model repository page (route: model/local-repo).
-// Pure front-end prototype: stats cards, keyword/source/status filtering and
-// lifecycle actions (deploy / undeploy / rollback / delete) all operate on
-// local mock state. Every label comes from the i18n block
-// "model.localRepoPage".
+// Connected to backend API: /api/v1/local-model
 
 import {
   Boxes,
@@ -39,55 +36,107 @@ import {
   TableRow,
 } from "@/components/bs-ui/table";
 import { useToast } from "@/components/bs-ui/toast/use-toast";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SourceBadge, StatusBadge } from "./LocalModelBadges";
-import { DirectoryImportDialog, UploadModelDialog } from "./LocalModelDialogs";
+import { DirectoryImportDialog } from "./LocalModelDialogs";
 import { LocalModelDetails } from "./LocalModelDetails";
 import {
-  INITIAL_LOCAL_MODELS,
   filterLocalModels,
   isReferencedAsParent,
-  nowLabel,
   type LocalModelFilter,
-  type LocalModelRecord,
 } from "./localModelData";
+import {
+  getLocalModelsApi,
+  deployLocalModelApi,
+  undeployLocalModelApi,
+  deleteLocalModelApi,
+  type LocalModelRecord,
+} from "@/controllers/API/localModel";
+import { captureAndAlertRequestErrorHoc } from "@/controllers/request";
 
 export function LocalModelPrototype() {
   const { t, i18n } = useTranslation("model");
   const { toast } = useToast();
-  const [models, setModels] = useState<LocalModelRecord[]>(INITIAL_LOCAL_MODELS);
+  const [models, setModels] = useState<LocalModelRecord[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<LocalModelFilter>({
     keyword: "",
     source: "all",
     status: "all",
   });
-  const [uploadOpen, setUploadOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  // The route lazy-loads this page; make sure the namespace is ready.
   useEffect(() => {
     i18n.loadNamespaces("model");
   }, [i18n]);
 
-  const visibleModels = useMemo(() => filterLocalModels(models, filter), [models, filter]);
-  const modelById = useMemo(
-    () => new Map(models.map((model) => [model.id, model])),
+  // Fetch models from backend
+  const fetchModels = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getLocalModelsApi();
+      setModels(data || []);
+    } catch (err) {
+      console.error("Failed to fetch local models:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchModels();
+  }, [fetchModels]);
+
+  // Convert API record to display format (snake_case -> camelCase for existing components)
+  const displayModels = useMemo(
+    () =>
+      models.map((m) => ({
+        id: m.id,
+        name: m.name,
+        arch: m.arch,
+        version: m.version,
+        source: m.source,
+        params: m.params,
+        precision: m.precision,
+        status: m.status,
+        deployTime: m.deploy_time,
+        updateTime: m.update_time || m.create_time,
+        operator: m.operator,
+        parentId: m.parent_id,
+        dataset: m.dataset,
+        hyperparams: m.hyperparams,
+        metrics:
+          m.eval_loss != null || m.bleu_4 != null || m.rouge_1 != null
+            ? { evalLoss: m.eval_loss, bleu_4: m.bleu_4, rouge_1: m.rouge_1, rouge_2: m.rouge_2, rouge_l: m.rouge_l }
+            : undefined,
+      })),
     [models],
+  );
+
+  const visibleModels = useMemo(
+    () => filterLocalModels(displayModels, filter),
+    [displayModels, filter],
+  );
+
+  const modelById = useMemo(
+    () => new Map(displayModels.map((model) => [model.id, model])),
+    [displayModels],
   );
   const detailsModel = detailsId ? modelById.get(detailsId) ?? null : null;
   const deleteModel = deleteId ? modelById.get(deleteId) ?? null : null;
 
   const stats = useMemo(
     () => ({
-      total: models.length,
-      deployed: models.filter((model) => model.status === "deployed").length,
-      finetuned: models.filter((model) => model.source === "finetuned").length,
-      base: models.filter((model) => model.source !== "finetuned").length,
+      total: displayModels.length,
+      deployed: displayModels.filter((m) => m.status === "deployed").length,
+      finetuned: displayModels.filter((m) => m.source === "finetuned").length,
+      base: displayModels.filter((m) => m.source !== "finetuned").length,
     }),
-    [models],
+    [displayModels],
   );
 
   const statCards = [
@@ -101,78 +150,60 @@ export function LocalModelPrototype() {
     toast({ variant, title: t(key), description: t(key) });
   };
 
-  const handleDeploy = (id: string) => {
-    const time = nowLabel();
-    setModels((prev) =>
-      prev.map((model) =>
-        model.id === id
-          ? { ...model, status: "deployed" as const, deployTime: time, updateTime: time }
-          : model,
-      ),
-    );
-    notify("success", "model.localRepoPage.deploySuccess");
+  const handleDeploy = async (id: string) => {
+    const res = await captureAndAlertRequestErrorHoc(deployLocalModelApi(id));
+    if (res) {
+      notify("success", "model.localRepoPage.deploySuccess");
+      fetchModels();
+    }
   };
 
-  const handleUndeploy = (id: string) => {
-    const time = nowLabel();
-    setModels((prev) =>
-      prev.map((model) =>
-        model.id === id
-          ? { ...model, status: "offline" as const, deployTime: undefined, updateTime: time }
-          : model,
-      ),
-    );
-    notify("success", "model.localRepoPage.undeploySuccess");
+  const handleUndeploy = async (id: string) => {
+    const res = await captureAndAlertRequestErrorHoc(undeployLocalModelApi(id));
+    if (res) {
+      notify("success", "model.localRepoPage.undeploySuccess");
+      fetchModels();
+    }
   };
 
-  const handleRollback = (id: string) => {
-    const time = nowLabel();
-    setModels((prev) =>
-      prev.map((model) => {
-        if (model.id !== id) return model;
-        const parent = model.parentId
-          ? prev.find((item) => item.id === model.parentId)
-          : undefined;
-        // Rolling back restores the parent's version and takes the model offline.
-        return {
-          ...model,
-          status: "offline" as const,
-          deployTime: undefined,
-          version: parent?.version ?? model.version,
-          updateTime: time,
-        };
-      }),
-    );
-    notify("success", "model.localRepoPage.rollbackSuccess");
+  const handleRollback = async (id: string) => {
+    // Rollback = undeploy (simplified for now)
+    const res = await captureAndAlertRequestErrorHoc(undeployLocalModelApi(id));
+    if (res) {
+      notify("success", "model.localRepoPage.rollbackSuccess");
+      fetchModels();
+    }
   };
 
-  const handleRequestDelete = (model: LocalModelRecord) => {
-    // Deployed models and parent-of-finetune models must not be removed.
+  const handleRequestDelete = (model: any) => {
     if (model.status === "deployed") {
       notify("warning", "model.localRepoPage.deleteDeployed");
       return;
     }
-    if (isReferencedAsParent(models, model.id)) {
+    if (isReferencedAsParent(displayModels, model.id)) {
       notify("warning", "model.localRepoPage.deleteReferenced");
       return;
     }
     setDeleteId(model.id);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deleteId) return;
-    setModels((prev) => prev.filter((model) => model.id !== deleteId));
-    setDeleteId(null);
-    notify("success", "model.localRepoPage.deleteSuccess");
+    setDeleting(true);
+    try {
+      const res = await captureAndAlertRequestErrorHoc(deleteLocalModelApi(deleteId));
+      if (res) {
+        setDeleteId(null);
+        notify("success", "model.localRepoPage.deleteSuccess");
+        fetchModels();
+      }
+    } finally {
+      setDeleting(false);
+    }
   };
 
-  const handleUploaded = () => {
-    notify("success", "model.localRepoPage.uploadSuccess");
-  };
-
-  const handleImportConfirm = (record: LocalModelRecord) => {
-    setModels((prev) => [record, ...prev]);
-    notify("success", "model.localRepoPage.importSuccess");
+  const handleImportSuccess = () => {
+    fetchModels();  // 上传成功后刷新列表
   };
 
   return (
@@ -188,10 +219,6 @@ export function LocalModelPrototype() {
           <Button variant="outline" onClick={() => setImportOpen(true)}>
             <FolderInput className="mr-1 h-4 w-4" />
             {t("model.localRepoPage.importByDirectory")}
-          </Button>
-          <Button onClick={() => setUploadOpen(true)}>
-            <Upload className="mr-1 h-4 w-4" />
-            {t("model.localRepoPage.uploadModel")}
           </Button>
         </div>
       </div>
@@ -269,7 +296,13 @@ export function LocalModelPrototype() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {visibleModels.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                  加载中...
+                </TableCell>
+              </TableRow>
+            ) : visibleModels.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   {t("model.localRepoPage.emptyList")}
@@ -341,23 +374,17 @@ export function LocalModelPrototype() {
         open={Boolean(detailsModel)}
         onOpenChange={(open) => !open && setDetailsId(null)}
         model={detailsModel}
-        models={models}
+        models={displayModels}
         onRollback={handleRollback}
-      />
-
-      <UploadModelDialog
-        open={uploadOpen}
-        onOpenChange={setUploadOpen}
-        onUploaded={handleUploaded}
       />
 
       <DirectoryImportDialog
         open={importOpen}
         onOpenChange={setImportOpen}
-        onConfirm={handleImportConfirm}
+        onUploaded={handleImportSuccess}
       />
 
-      <Dialog open={Boolean(deleteModel)} onOpenChange={(open) => !open && setDeleteId(null)}>
+      <Dialog open={Boolean(deleteModel)} onOpenChange={(open) => !open && !deleting && setDeleteId(null)}>
         <DialogContent className="sm:max-w-[420px]">
           <DialogHeader>
             <DialogTitle>{t("model.localRepoPage.deleteTitle")}</DialogTitle>
@@ -365,12 +392,25 @@ export function LocalModelPrototype() {
               {t("model.localRepoPage.deleteConfirmText", { name: deleteModel?.name ?? "" })}
             </DialogDescription>
           </DialogHeader>
+          {deleteModel?.source === "finetuned" && (
+            <p className="text-sm text-amber-600 bg-amber-50 rounded-md px-3 py-2">
+              删除微调模型时将同步取消微调任务的发布状态。模型权重文件较大，删除可能需要较长时间，请耐心等待。
+            </p>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteId(null)}>
+            <Button variant="outline" onClick={() => setDeleteId(null)} disabled={deleting}>
               {t("model.localRepoPage.cancel")}
             </Button>
-            <Button variant="destructive" onClick={handleConfirmDelete}>
-              {t("model.localRepoPage.confirmDelete")}
+            <Button variant="destructive" onClick={handleConfirmDelete} disabled={deleting}>
+              {deleting ? (
+                <span className="flex items-center gap-2">
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z" />
+                  </svg>
+                  删除中...
+                </span>
+              ) : t("model.localRepoPage.confirmDelete")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -407,7 +407,6 @@
     "manual": "手动创建"
   },
   "knowledgeDesc": "知识库描述",
-  "useDefaultEmbedding": "使用知识库默认模型",
   "embeddingModel": "知识库embedding模型选择",
   "loadingModelList": "正在加载模型列表...",
   "noAvailableModel": "暂无可用模型",
@@ -429,8 +428,6 @@
   "fileExists": "{{name1}} 对应已存在文件 {{name2}}",
   "tags": "标签",
   "addTag": "添加标签",
-  "autoTag": "自动标签",
-  "autoTagging": "标签生成中...",
   "editTag": "编辑标签",
   "createTag": "创建标签",
   "deleteTag": "删除标签",

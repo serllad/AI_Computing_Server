@@ -129,10 +129,26 @@ class FinetuneExtraParams(BaseModel):
     gpus: str = Field(..., description='Needs to be usedGPUCard #')
     val_ratio: float = Field(0.1, ge=0, le=1, description='Proportion of validation sets')
     per_device_train_batch_size: int = Field(1, description='Batch size')
-    learning_rate: float = Field(0.00005, ge=0, le=1, description='Learning rate <g x=1 id="1364"/>')
+    learning_rate: float = Field(0.00005, ge=0, le=1, description='Learning rate')
     num_train_epochs: int = Field(3, gt=0, description='Iteration rounds')
     max_seq_len: int = Field(8192, gt=0, description='Maximum List Length')
     cpu_load: str = Field('false', description='Y/NcpuLoad')
+
+    # 优化与正则化
+    optimizer: str = Field('adamw_torch', description='Optimizer type')
+    max_grad_norm: float = Field(1.0, gt=0, description='Max gradient norm')
+    weight_decay: float = Field(0.0, ge=0, le=1, description='Weight decay')
+
+    # 学习率调度
+    lr_scheduler_type: str = Field('cosine', description='LR scheduler type')
+    warmup_steps: int = Field(0, ge=0, description='Warmup steps')
+
+    # 梯度累积
+    gradient_accumulation_steps: int = Field(4, gt=0, description='Gradient accumulation steps')
+
+    # QLoRA 量化
+    quantization_bit: Optional[int] = Field(None, description='QLoRA quantization bits (4 or 8)')
+    quantization_type: str = Field('nf4', description='Quantization type: nf4 or fp4')
 
     @field_validator('per_device_train_batch_size', mode='before')
     @classmethod

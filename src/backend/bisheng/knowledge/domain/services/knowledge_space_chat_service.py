@@ -990,51 +990,21 @@ class KnowledgeSpaceChatService:
         )
 
         target_file_ids = await self._resolve_kb_file_ids_by_tags(kb_id, tag_names)
-        chunk_keys = await self._resolve_kb_chunk_keys_by_tags(kb_id, tag_names)
-
-        if tag_names and not target_file_ids and not chunk_keys:
+        if tag_names and not target_file_ids:
             return []
 
-        milvus_exprs: list[str] = []
-        es_filters: list[dict] = []
-
         if target_file_ids:
-            milvus_exprs.append(f"document_id in {target_file_ids}")
-            es_filters.append({"terms": {"metadata.document_id": target_file_ids}})
-
-        if chunk_keys:
-            by_file: dict[int, list[int]] = {}
-            for file_id, chunk_index in chunk_keys:
-                by_file.setdefault(file_id, []).append(chunk_index)
-            chunk_exprs = [
-                f"(document_id == {file_id} && chunk_index in {sorted(set(indexes))})"
-                for file_id, indexes in by_file.items()
-            ]
-            milvus_exprs.append("(" + " || ".join(chunk_exprs) + ")")
-            es_filters.append({
-                "bool": {
-                    "should": [{"match": {"metadata.tags": tag_name}} for tag_name in tag_names],
-                    "minimum_should_match": 1,
-                }
-            })
-
-        if milvus_exprs:
             milvus_kwargs: dict = {
                 "k": 100,
                 "param": {"ef": 110},
-                "expr": " || ".join(milvus_exprs),
+                "expr": f"document_id in {target_file_ids}",
+            }
+            es_kwargs: dict = {
+                "k": 100,
+                "filter": [{"terms": {"metadata.document_id": target_file_ids}}],
             }
         else:
             milvus_kwargs = {"k": 100, "param": {"ef": 110}}
-
-        if es_filters:
-            es_filter: dict = (
-                es_filters[0]
-                if len(es_filters) == 1
-                else {"bool": {"should": es_filters, "minimum_should_match": 1}}
-            )
-            es_kwargs: dict = {"k": 100, "filter": [es_filter]}
-        else:
             es_kwargs = {"k": 100}
 
         milvus_vector = await KnowledgeRag.init_knowledge_milvus_vectorstore(self.login_user.user_id, knowledge=kb)
@@ -1078,41 +1048,6 @@ class KnowledgeSpaceChatService:
             resource_type=ResourceTypeEnum.KNOWLEDGE_FILE,
         )
         return [int(link.resource_id) for link in tag_links]
-
-    async def _resolve_kb_chunk_keys_by_tags(
-        self,
-        knowledge_id: int,
-        tag_names: list[str],
-    ) -> list[tuple[int, int]] | None:
-        """Map tag names (scoped to a knowledge base) to chunk keys.
-
-        ``None`` = no tag filter requested. Empty list = tags given but no chunks
-        match. Each chunk key is ``(file_id, chunk_index)``.
-        """
-        if not tag_names:
-            return None
-        resolved_tag_ids: list[int] = []
-        for tag_name in tag_names:
-            tags = await TagDao.get_tags_by_business(
-                business_type=TagBusinessTypeEnum.KNOWLEDGE,
-                business_id=str(knowledge_id),
-                name=tag_name,
-            )
-            resolved_tag_ids.extend([t.id for t in tags])
-        if not resolved_tag_ids:
-            return []
-        tag_links = await TagDao.aget_resources_by_tags(
-            resolved_tag_ids,
-            resource_type=ResourceTypeEnum.KNOWLEDGE_CHUNK,
-        )
-        chunk_keys: list[tuple[int, int]] = []
-        for link in tag_links:
-            try:
-                file_id_str, chunk_index_str = link.resource_id.split(":", 1)
-                chunk_keys.append((int(file_id_str), int(chunk_index_str)))
-            except (ValueError, TypeError):
-                continue
-        return chunk_keys
 
     @staticmethod
     async def get_history(chat_id: str, limit: int = 4) -> list[BaseMessage]:

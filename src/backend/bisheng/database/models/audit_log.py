@@ -29,7 +29,6 @@ class SystemId(Enum):
     DASHBOARD = "dashboard"  # KANBAN
     SUBSCRIPTION = "subscription"  # Subscription Management
     KNOWLEDGE_SPACE = "knowledge_space"  # Knowledge Space
-    DATASET = "dataset"  # Dataset
 
 
 # Action Behavior Enumeration
@@ -77,11 +76,6 @@ class EventType(Enum):
     DELETE_FILE_VERSION = "delete_file_version"
     DISMISS_SIMILAR_FILE = "dismiss_similar_file"
 
-    CREATE_DATASET = "create_dataset"  # Create Dataset
-    UPDATE_DATASET = "update_dataset"  # Update Dataset
-    DELETE_DATASET = "delete_dataset"  # Delete Dataset
-    UPLOAD_DATASET = "upload_dataset"  # Upload Dataset
-
 
 # Action object type enumeration
 class ObjectType(Enum):
@@ -98,7 +92,6 @@ class ObjectType(Enum):
     DASHBOARD = "dashboard"  # KANBAN
     CHANNEL = "channel"  # Subscription Channel
     KNOWLEDGE_SPACE = "knowledge_space"  # Knowledge Space
-    DATASET = "dataset"  # Dataset
 
 
 class AuditLogBase(SQLModelSerializable):

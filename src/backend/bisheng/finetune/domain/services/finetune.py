@@ -287,6 +287,55 @@ class FinetuneService:
         finetune.status = new_status
         finetune.model_id = published_model.id
         await FinetuneDao.update_job(finetune)
+
+        # Register in local model repository
+        try:
+            from bisheng.local_model.domain.services.local_model_service import LocalModelService
+            # Extract dataset names from train_data and preset_data
+            dataset_names = []
+            if finetune.train_data:
+                for td in finetune.train_data:
+                    if td.get('name'):
+                        dataset_names.append(td['name'])
+            if finetune.preset_data:
+                for td in finetune.preset_data:
+                    if td.get('name'):
+                        dataset_names.append(td['name'])
+            dataset_name = ', '.join(dataset_names) if dataset_names else ''
+
+            # Extract eval metrics from report
+            eval_loss = None
+            bleu_4 = None
+            rouge_1 = None
+            rouge_2 = None
+            rouge_l = None
+            if finetune.report:
+                eval_loss = finetune.report.get('eval_loss')
+                bleu_4 = finetune.report.get('predict_bleu-4') or finetune.report.get('bleu-4')
+                rouge_1 = finetune.report.get('predict_rouge-1') or finetune.report.get('rouge-1')
+                rouge_2 = finetune.report.get('predict_rouge-2') or finetune.report.get('rouge-2')
+                rouge_l = finetune.report.get('predict_rouge-l') or finetune.report.get('rouge-l')
+
+            await LocalModelService.register_finetuned_model(
+                name=finetune.model_name,
+                weight_path=finetune.model_name,
+                parent_name=finetune.base_model_name,
+                finetune_job_id=finetune.id,
+                dataset=dataset_name,
+                hyperparams=finetune.extra_params,
+                eval_loss=eval_loss,
+                bleu_4=bleu_4,
+                rouge_1=rouge_1,
+                rouge_2=rouge_2,
+                rouge_l=rouge_l,
+                operator=finetune.user_name or '',
+                tenant_id=finetune.tenant_id or 1,
+            )
+            logger.info(f'registered model in local repo: {finetune.model_name}')
+        except Exception as e:
+            # Don't fail the publish if local repo registration fails
+            logger.warning(f'failed to register model in local repo: {e}')
+
         logger.info('export sft job success')
         return finetune
 
@@ -316,6 +365,17 @@ class FinetuneService:
         finetune.status = new_status
         finetune.model_id = 0
         await FinetuneDao.update_job(finetune)
+
+        # Sync: delete from local model repository
+        try:
+            from bisheng.local_model.domain.models.local_model import LocalModelDao
+            local_model = await LocalModelDao.find_by_name(finetune.model_name, finetune.tenant_id)
+            if local_model:
+                await LocalModelDao.delete_by_id(local_model.id)
+                logger.info(f'deleted model from local repo: {finetune.model_name}')
+        except Exception as e:
+            logger.warning(f'failed to delete model from local repo: {e}')
+
         logger.info('cancel export sft job success')
         return finetune
 

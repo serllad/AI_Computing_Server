@@ -575,9 +575,6 @@ class FileProcessBase(BaseModel):
     enable_formula: int | None = Field(default=1, description="latexFormula Recognition")
     filter_page_header_footer: int | None = Field(default=0, description="Filter Header Footer")
     excel_rule: ExcelRule | None = Field(default=None, description="excel rule")
-    embedding_model_id: str | None = Field(
-        default=None, description="Optional embedding model id override for this upload"
-    )
     cache: bool | None = Field(
         default=True, description="Whether to fetch data from the cache when previewing the document"
     )
